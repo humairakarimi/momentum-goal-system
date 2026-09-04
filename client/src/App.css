@@ -55,3 +55,80 @@
 .welcome button:hover {
   background-color: #5848e5;
 }
+
+.goal-form {
+  width: min(90%, 700px);
+  margin: 60px auto;
+  padding: 40px;
+  background-color: white;
+  border-radius: 20px;
+  box-shadow: 0 12px 35px rgba(31, 41, 55, 0.08);
+}
+
+.goal-form h2 {
+  margin-top: 0;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.goal-form form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.goal-form label {
+  margin-top: 8px;
+  font-weight: bold;
+}
+
+.goal-form input,
+.goal-form textarea {
+  width: 100%;
+  padding: 12px;
+  color: #1f2937;
+  background-color: white;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+}
+
+.goal-form textarea {
+  resize: vertical;
+}
+
+.goal-form input:focus,
+.goal-form textarea:focus {
+  outline: 2px solid #6d5dfc;
+  border-color: transparent;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.form-actions button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.form-actions button[type="submit"] {
+  color: white;
+  background-color: #6d5dfc;
+}
+
+.form-actions button[type="submit"]:hover {
+  background-color: #5848e5;
+}
+
+.form-actions .cancel-button {
+  color: #374151;
+  background-color: #e5e7eb;
+}
+
+.form-actions .cancel-button:hover {
+  background-color: #d1d5db;
+}
