@@ -132,3 +132,60 @@
 .form-actions .cancel-button:hover {
   background-color: #d1d5db;
 }
+.goals-section {
+  width: min(90%, 1000px);
+  margin: 60px auto;
+}
+
+.goals-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+}
+
+.goals-heading h2 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.goals-heading button {
+  padding: 12px 20px;
+  color: white;
+  background-color: #6d5dfc;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.goals-heading button:hover {
+  background-color: #5848e5;
+}
+
+.goals-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.goal-card {
+  padding: 30px;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(31, 41, 55, 0.08);
+}
+
+.goal-card h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-size: 1.4rem;
+}
+
+.goal-card p {
+  line-height: 1.6;
+  color: #6b7280;
+}
+
+.goal-card strong {
+  color: #1f2937;
+}

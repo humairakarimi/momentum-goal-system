@@ -6,18 +6,22 @@ function App() {
   const [goalTitle, setGoalTitle] = useState("");
   const [goalDescription, setGoalDescription] = useState("");
   const [targetDate, setTargetDate] = useState("");
-  const [savedGoal, setSavedGoal] = useState(null);
+  const [goals, setGoals] = useState([]);
 
   function handleSubmit(event) {
     event.preventDefault();
 
     const newGoal = {
+      id: Date.now(),
       title: goalTitle,
       description: goalDescription,
       targetDate: targetDate,
     };
 
-    setSavedGoal(newGoal);
+    setGoals([...goals, newGoal]);
+    setGoalTitle("");
+    setGoalDescription("");
+    setTargetDate("");
     setShowGoalForm(false);
   }
 
@@ -28,15 +32,7 @@ function App() {
         <p>Turn your goals into action.</p>
       </header>
 
-      {savedGoal ? (
-        <section className="goal-form">
-          <h2>{savedGoal.title}</h2>
-          <p>{savedGoal.description}</p>
-          <p>
-            <strong>Target date:</strong> {savedGoal.targetDate}
-          </p>
-        </section>
-      ) : showGoalForm ? (
+      {showGoalForm ? (
         <section className="goal-form">
           <h2>Create your first goal</h2>
 
@@ -84,6 +80,28 @@ function App() {
               </button>
             </div>
           </form>
+        </section>
+      ) : goals.length > 0 ? (
+        <section className="goals-section">
+          <div className="goals-heading">
+            <h2>Your goals</h2>
+
+            <button type="button" onClick={() => setShowGoalForm(true)}>
+              Add another goal
+            </button>
+          </div>
+
+          <div className="goals-list">
+            {goals.map((goal) => (
+              <article className="goal-card" key={goal.id}>
+                <h3>{goal.title}</h3>
+                <p>{goal.description}</p>
+                <p>
+                  <strong>Target date:</strong> {goal.targetDate}
+                </p>
+              </article>
+            ))}
+          </div>
         </section>
       ) : (
         <section className="welcome">
