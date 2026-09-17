@@ -189,3 +189,16 @@
 .goal-card strong {
   color: #1f2937;
 }
+
+.delete-button {
+  padding: 10px 16px;
+  color: #b91c1c;
+  background-color: #fee2e2;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background-color: #fecaca;
+}

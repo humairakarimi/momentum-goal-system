@@ -24,6 +24,10 @@ function App() {
     setTargetDate("");
     setShowGoalForm(false);
   }
+  function handleDeleteGoal(goalId) {
+    const updatedGoals = goals.filter((goal) => goal.id !== goalId);
+    setGoals(updatedGoals);
+  }
 
   return (
     <main className="app">
@@ -99,6 +103,13 @@ function App() {
                 <p>
                   <strong>Target date:</strong> {goal.targetDate}
                 </p>
+                <button
+                  type="button"
+                  className="delete-button"
+                  onClick={() => handleDeleteGoal(goal.id)}
+                >
+                  Delete
+                </button>
               </article>
             ))}
           </div>
