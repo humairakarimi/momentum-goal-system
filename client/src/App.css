@@ -202,3 +202,18 @@
 .delete-button:hover {
   background-color: #fecaca;
 }
+
+.edit-button {
+  margin-right: 10px;
+  padding: 10px 16px;
+  color: #4f46e5;
+  background-color: #e0e7ff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.edit-button:hover {
+  background-color: #c7d2fe;
+}
+

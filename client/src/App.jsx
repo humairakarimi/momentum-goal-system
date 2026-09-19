@@ -7,21 +7,54 @@ function App() {
   const [goalDescription, setGoalDescription] = useState("");
   const [targetDate, setTargetDate] = useState("");
   const [goals, setGoals] = useState([]);
+  const [editingGoalId, setEditingGoalId] = useState(null);
 
   function handleSubmit(event) {
     event.preventDefault();
 
-    const newGoal = {
-      id: Date.now(),
-      title: goalTitle,
-      description: goalDescription,
-      targetDate: targetDate,
-    };
+    if (editingGoalId !== null) {
+      const updatedGoals = goals.map((goal) =>
+        goal.id === editingGoalId
+          ? {
+              ...goal,
+              title: goalTitle,
+              description: goalDescription,
+              targetDate: targetDate,
+            }
+          : goal,
+      );
 
-    setGoals([...goals, newGoal]);
+      setGoals(updatedGoals);
+      setEditingGoalId(null);
+    } else {
+      const newGoal = {
+        id: Date.now(),
+        title: goalTitle,
+        description: goalDescription,
+        targetDate: targetDate,
+      };
+
+      setGoals([...goals, newGoal]);
+    }
+
     setGoalTitle("");
     setGoalDescription("");
     setTargetDate("");
+    setShowGoalForm(false);
+  }
+
+  function handleEditGoal(goal) {
+    setGoalTitle(goal.title);
+    setGoalDescription(goal.description);
+    setTargetDate(goal.targetDate);
+    setEditingGoalId(goal.id);
+    setShowGoalForm(true);
+  }
+  function handleCancelForm() {
+    setGoalTitle("");
+    setGoalDescription("");
+    setTargetDate("");
+    setEditingGoalId(null);
     setShowGoalForm(false);
   }
   function handleDeleteGoal(goalId) {
@@ -38,7 +71,7 @@ function App() {
 
       {showGoalForm ? (
         <section className="goal-form">
-          <h2>Create your first goal</h2>
+          <h2>{editingGoalId !== null ? "Edit goal" : "Create a goal"}</h2>
 
           <form onSubmit={handleSubmit}>
             <label htmlFor="goal-title">Goal title</label>
@@ -73,12 +106,14 @@ function App() {
             />
 
             <div className="form-actions">
-              <button type="submit">Save goal</button>
+              <button type="submit">
+                {editingGoalId !== null ? "Update goal" : "Save goal"}
+              </button>
 
               <button
                 type="button"
                 className="cancel-button"
-                onClick={() => setShowGoalForm(false)}
+                onClick={handleCancelForm}
               >
                 Cancel
               </button>
@@ -100,9 +135,19 @@ function App() {
               <article className="goal-card" key={goal.id}>
                 <h3>{goal.title}</h3>
                 <p>{goal.description}</p>
+
                 <p>
                   <strong>Target date:</strong> {goal.targetDate}
                 </p>
+
+                <button
+                  type="button"
+                  className="edit-button"
+                  onClick={() => handleEditGoal(goal)}
+                >
+                  Edit
+                </button>
+
                 <button
                   type="button"
                   className="delete-button"
