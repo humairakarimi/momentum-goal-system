@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 
 function App() {
@@ -6,8 +6,16 @@ function App() {
   const [goalTitle, setGoalTitle] = useState("");
   const [goalDescription, setGoalDescription] = useState("");
   const [targetDate, setTargetDate] = useState("");
-  const [goals, setGoals] = useState([]);
+  const [goals, setGoals] = useState(() => {
+  const storedGoals = localStorage.getItem("momentumGoals");
+
+  return storedGoals ? JSON.parse(storedGoals) : [];
+});
   const [editingGoalId, setEditingGoalId] = useState(null);
+
+  useEffect(() => {
+  localStorage.setItem("momentumGoals", JSON.stringify(goals));
+}, [goals]);
 
   function handleSubmit(event) {
     event.preventDefault();
