@@ -217,3 +217,102 @@
   background-color: #c7d2fe;
 }
 
+
+.milestones {
+  margin: 24px 0;
+  padding: 20px;
+  background-color: #f5f3ff;
+  border: 1px solid #ddd8ff;
+  border-radius: 12px;
+}
+
+.milestones h4 {
+  margin: 0 0 14px;
+  color: #374151;
+  font-size: 1.1rem;
+}
+
+.milestones ul {
+  margin: 0 0 18px;
+  padding-left: 22px;
+}
+
+.milestones li {
+  margin-bottom: 8px;
+  color: #4b5563;
+}
+
+.milestones > p {
+  margin: 0 0 18px;
+  color: #6b7280;
+}
+
+.milestones form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.milestones input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  outline: none;
+}
+
+.milestones input:focus {
+  border-color: #6d5dfc;
+  box-shadow: 0 0 0 3px rgba(109, 93, 252, 0.12);
+}
+
+.milestone-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.milestone-button {
+  padding: 10px 16px;
+  color: #6d5dfc;
+  background-color: white;
+  border: 1px solid #6d5dfc;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.milestone-button:hover {
+  color: white;
+  background-color: #6d5dfc;
+}
+
+.milestone-actions button {
+  width: auto;
+  min-width: 0;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 7px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.milestone-actions button[type="submit"] {
+  color: white;
+  background-color: #6d5dfc;
+}
+
+.milestone-actions button[type="submit"]:hover {
+  background-color: #5848e5;
+}
+
+.milestone-actions .cancel-button {
+  color: #4b5563;
+  background-color: #e5e7eb;
+}
+
+.milestone-actions .cancel-button:hover {
+  background-color: #d1d5db;
+}

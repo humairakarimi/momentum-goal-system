@@ -7,15 +7,17 @@ function App() {
   const [goalDescription, setGoalDescription] = useState("");
   const [targetDate, setTargetDate] = useState("");
   const [goals, setGoals] = useState(() => {
-  const storedGoals = localStorage.getItem("momentumGoals");
+    const storedGoals = localStorage.getItem("momentumGoals");
 
-  return storedGoals ? JSON.parse(storedGoals) : [];
-});
+    return storedGoals ? JSON.parse(storedGoals) : [];
+  });
   const [editingGoalId, setEditingGoalId] = useState(null);
+  const [activeMilestoneGoalId, setActiveMilestoneGoalId] = useState(null);
+  const [milestoneTitle, setMilestoneTitle] = useState("");
 
   useEffect(() => {
-  localStorage.setItem("momentumGoals", JSON.stringify(goals));
-}, [goals]);
+    localStorage.setItem("momentumGoals", JSON.stringify(goals));
+  }, [goals]);
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -40,6 +42,7 @@ function App() {
         title: goalTitle,
         description: goalDescription,
         targetDate: targetDate,
+        milestone: [],
       };
 
       setGoals([...goals, newGoal]);
@@ -68,6 +71,29 @@ function App() {
   function handleDeleteGoal(goalId) {
     const updatedGoals = goals.filter((goal) => goal.id !== goalId);
     setGoals(updatedGoals);
+  }
+
+  function handleAddMilestone(event, goalId) {
+    event.preventDefault();
+
+    const newMilestone = {
+      id: Date.now(),
+      title: milestoneTitle,
+      completed: false,
+    };
+
+    const updatedGoals = goals.map((goal) =>
+      goal.id === goalId
+        ? {
+            ...goal,
+            milestones: [...(goal.milestones || []), newMilestone],
+          }
+        : goal,
+    );
+
+    setGoals(updatedGoals);
+    setMilestoneTitle("");
+    setActiveMilestoneGoalId(null);
   }
 
   return (
@@ -147,6 +173,61 @@ function App() {
                 <p>
                   <strong>Target date:</strong> {goal.targetDate}
                 </p>
+                <div className="milestones">
+                  <h4>Milestones</h4>
+
+                  {(goal.milestones || []).length > 0 ? (
+                    <ul>
+                      {(goal.milestones || []).map((milestone) => (
+                        <li key={milestone.id}>{milestone.title}</li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>No milestones added yet.</p>
+                  )}
+
+                  {activeMilestoneGoalId === goal.id ? (
+                    <form
+                      onSubmit={(event) => handleAddMilestone(event, goal.id)}
+                    >
+                      <input
+                        type="text"
+                        placeholder="Enter a milestone"
+                        value={milestoneTitle}
+                        onChange={(event) =>
+                          setMilestoneTitle(event.target.value)
+                        }
+                        required
+                      />
+
+                      <div className="milestone-actions">
+                        <button type="submit">Save milestone</button>
+
+                        <button
+                          type="button"
+                          className="cancel-button"
+                          onClick={() => {
+                            setActiveMilestoneGoalId(null);
+                            setMilestoneTitle("");
+                          }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  ) : (
+                    <button
+                      type="button"
+                      className="milestone-button"
+                      onClick={() => {
+                        setActiveMilestoneGoalId(goal.id);
+                        setMilestoneTitle("");
+                      }}
+                    >
+                      Add milestone
+                    </button>
+                  )}
+                </div>
 
                 <button
                   type="button"
