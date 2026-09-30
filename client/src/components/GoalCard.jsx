@@ -9,7 +9,16 @@ function GoalCard({
 }) {
   const [showMilestoneForm, setShowMilestoneForm] = useState(false);
   const [milestoneTitle, setMilestoneTitle] = useState("");
+  const milestones = goal.milestones || [];
 
+  const completedMilestones = milestones.filter(
+    (milestone) => milestone.completed,
+  ).length;
+
+  const progress =
+    milestones.length > 0
+      ? Math.round((completedMilestones / milestones.length) * 100)
+      : 0;
   function handleMilestoneSubmit(event) {
     event.preventDefault();
 
@@ -35,10 +44,32 @@ function GoalCard({
 
       <div className="milestones">
         <h4>Milestones</h4>
+        {milestones.length > 0 && (
+          <div className="milestone-progress">
+            <p>
+              {completedMilestones} of {milestones.length} completed —{" "}
+              {progress}%
+            </p>
 
-        {(goal.milestones || []).length > 0 ? (
+            <div
+              className="progress-track"
+              role="progressbar"
+              aria-valuenow={progress}
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-label="Milestone progress"
+            >
+              <div
+                className="progress-fill"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
+
+        {milestones.length > 0 ? (
           <ul>
-            {(goal.milestones || []).map((milestone) => (
+            {milestones.map((milestone) => (
               <li
                 key={milestone.id}
                 className={milestone.completed ? "milestone-completed" : ""}
