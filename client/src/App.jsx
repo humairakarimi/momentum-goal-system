@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import "./App.css";
+import GoalCard from "./components/GoalCard";
 
 function App() {
   const [showGoalForm, setShowGoalForm] = useState(false);
@@ -12,8 +13,6 @@ function App() {
     return storedGoals ? JSON.parse(storedGoals) : [];
   });
   const [editingGoalId, setEditingGoalId] = useState(null);
-  const [activeMilestoneGoalId, setActiveMilestoneGoalId] = useState(null);
-  const [milestoneTitle, setMilestoneTitle] = useState("");
 
   useEffect(() => {
     localStorage.setItem("momentumGoals", JSON.stringify(goals));
@@ -42,7 +41,7 @@ function App() {
         title: goalTitle,
         description: goalDescription,
         targetDate: targetDate,
-        milestone: [],
+        milestones: [],
       };
 
       setGoals([...goals, newGoal]);
@@ -73,9 +72,7 @@ function App() {
     setGoals(updatedGoals);
   }
 
-  function handleAddMilestone(event, goalId) {
-    event.preventDefault();
-
+  function handleAddMilestone(goalId, milestoneTitle) {
     const newMilestone = {
       id: Date.now(),
       title: milestoneTitle,
@@ -92,8 +89,6 @@ function App() {
     );
 
     setGoals(updatedGoals);
-    setMilestoneTitle("");
-    setActiveMilestoneGoalId(null);
   }
 
   return (
@@ -166,85 +161,13 @@ function App() {
 
           <div className="goals-list">
             {goals.map((goal) => (
-              <article className="goal-card" key={goal.id}>
-                <h3>{goal.title}</h3>
-                <p>{goal.description}</p>
-
-                <p>
-                  <strong>Target date:</strong> {goal.targetDate}
-                </p>
-                <div className="milestones">
-                  <h4>Milestones</h4>
-
-                  {(goal.milestones || []).length > 0 ? (
-                    <ul>
-                      {(goal.milestones || []).map((milestone) => (
-                        <li key={milestone.id}>{milestone.title}</li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p>No milestones added yet.</p>
-                  )}
-
-                  {activeMilestoneGoalId === goal.id ? (
-                    <form
-                      onSubmit={(event) => handleAddMilestone(event, goal.id)}
-                    >
-                      <input
-                        type="text"
-                        placeholder="Enter a milestone"
-                        value={milestoneTitle}
-                        onChange={(event) =>
-                          setMilestoneTitle(event.target.value)
-                        }
-                        required
-                      />
-
-                      <div className="milestone-actions">
-                        <button type="submit">Save milestone</button>
-
-                        <button
-                          type="button"
-                          className="cancel-button"
-                          onClick={() => {
-                            setActiveMilestoneGoalId(null);
-                            setMilestoneTitle("");
-                          }}
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </form>
-                  ) : (
-                    <button
-                      type="button"
-                      className="milestone-button"
-                      onClick={() => {
-                        setActiveMilestoneGoalId(goal.id);
-                        setMilestoneTitle("");
-                      }}
-                    >
-                      Add milestone
-                    </button>
-                  )}
-                </div>
-
-                <button
-                  type="button"
-                  className="edit-button"
-                  onClick={() => handleEditGoal(goal)}
-                >
-                  Edit
-                </button>
-
-                <button
-                  type="button"
-                  className="delete-button"
-                  onClick={() => handleDeleteGoal(goal.id)}
-                >
-                  Delete
-                </button>
-              </article>
+              <GoalCard
+                key={goal.id}
+                goal={goal}
+                onAddMilestone={handleAddMilestone}
+                onEdit={handleEditGoal}
+                onDelete={handleDeleteGoal}
+              />
             ))}
           </div>
         </section>
