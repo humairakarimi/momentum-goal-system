@@ -91,6 +91,28 @@ function App() {
     setGoals(updatedGoals);
   }
 
+  function handleToggleMilestone(goalId, milestoneId) {
+  const updatedGoals = goals.map((goal) => {
+    if (goal.id !== goalId) {
+      return goal;
+    }
+
+    const updatedMilestones = (goal.milestones || []).map((milestone) =>
+      milestone.id === milestoneId
+        ? { ...milestone, completed: !milestone.completed }
+        : milestone,
+    );
+
+    return {
+      ...goal,
+      milestones: updatedMilestones,
+    };
+  });
+
+  setGoals(updatedGoals);
+}
+
+
   return (
     <main className="app">
       <header className="header">
@@ -165,6 +187,7 @@ function App() {
                 key={goal.id}
                 goal={goal}
                 onAddMilestone={handleAddMilestone}
+                onToggleMilestone={handleToggleMilestone}
                 onEdit={handleEditGoal}
                 onDelete={handleDeleteGoal}
               />

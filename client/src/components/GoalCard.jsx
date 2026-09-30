@@ -1,6 +1,12 @@
 import { useState } from "react";
 
-function GoalCard({ goal, onAddMilestone, onEdit, onDelete }) {
+function GoalCard({
+  goal,
+  onAddMilestone,
+  onToggleMilestone,
+  onEdit,
+  onDelete,
+}) {
   const [showMilestoneForm, setShowMilestoneForm] = useState(false);
   const [milestoneTitle, setMilestoneTitle] = useState("");
 
@@ -33,7 +39,20 @@ function GoalCard({ goal, onAddMilestone, onEdit, onDelete }) {
         {(goal.milestones || []).length > 0 ? (
           <ul>
             {(goal.milestones || []).map((milestone) => (
-              <li key={milestone.id}>{milestone.title}</li>
+              <li
+                key={milestone.id}
+                className={milestone.completed ? "milestone-completed" : ""}
+              >
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={milestone.completed}
+                    onChange={() => onToggleMilestone(goal.id, milestone.id)}
+                  />
+
+                  <span>{milestone.title}</span>
+                </label>
+              </li>
             ))}
           </ul>
         ) : (

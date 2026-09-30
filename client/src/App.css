@@ -316,3 +316,22 @@
 .milestone-actions .cancel-button:hover {
   background-color: #d1d5db;
 }
+
+.milestones li label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.milestones li input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  accent-color: #6d5dfc;
+  cursor: pointer;
+}
+
+.milestone-completed span {
+  color: #9ca3af;
+  text-decoration: line-through;
+}
