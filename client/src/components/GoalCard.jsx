@@ -5,6 +5,7 @@ function GoalCard({
   goal,
   onAddMilestone,
   onToggleMilestone,
+  onDeleteMilestone,
   onAddAction,
   onToggleAction,
   onDeleteAction,
@@ -77,6 +78,7 @@ function GoalCard({
             goalId={goal.id}
             milestone={milestone}
             onToggleMilestone={onToggleMilestone}
+            onDeleteMilestone={onDeleteMilestone}
             onAddAction={onAddAction}
             onToggleAction={onToggleAction}
             onDeleteAction={onDeleteAction}

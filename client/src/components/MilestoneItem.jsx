@@ -5,6 +5,7 @@ function MilestoneItem({
   milestone,
   onToggleMilestone,
   onAddAction,
+  onDeleteMilestone,
   onToggleAction,
   onDeleteAction,
 }) {
@@ -35,15 +36,25 @@ function MilestoneItem({
           : "milestone-item"
       }
     >
-      <label className="milestone-label">
-        <input
-          type="checkbox"
-          checked={milestone.completed}
-          onChange={() => onToggleMilestone(goalId, milestone.id)}
-        />
+      <div className="milestone-heading">
+        <label className="milestone-label">
+          <input
+            type="checkbox"
+            checked={milestone.completed}
+            onChange={() => onToggleMilestone(goalId, milestone.id)}
+          />
 
-        <span>{milestone.title}</span>
-      </label>
+          <span>{milestone.title}</span>
+        </label>
+
+        <button
+          type="button"
+          className="delete-milestone-button"
+          onClick={() => onDeleteMilestone(goalId, milestone.id)}
+        >
+          Delete
+        </button>
+      </div>
 
       <div className="actions">
         <h5>Actions</h5>

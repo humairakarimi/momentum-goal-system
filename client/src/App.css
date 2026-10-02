@@ -452,3 +452,24 @@
 .delete-action-button:hover {
   background-color: #fee2e2;
 }
+
+.milestone-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.delete-milestone-button {
+  padding: 5px 9px;
+  color: #dc2626;
+  background-color: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.delete-milestone-button:hover {
+  background-color: #fee2e2;
+}
