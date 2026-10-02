@@ -360,7 +360,95 @@
   transition: width 0.25s ease;
 }
 
-.milestone-completed span {
+.milestone-completed > .milestone-label span {
   color: #9ca3af;
   text-decoration: line-through;
+}
+
+.action-completed span {
+  color: #9ca3af;
+  text-decoration: line-through;
+}
+.action-button {
+  margin-top: 10px;
+  padding: 8px 14px;
+  color: #6d5dfc;
+  background-color: white;
+  border: 1px solid #6d5dfc;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.action-button:hover {
+  color: white;
+  background-color: #6d5dfc;
+}
+
+.actions-list {
+  padding-left: 0;
+  list-style: none;
+}
+
+.actions-list li {
+  margin-bottom: 8px;
+}
+
+.actions-list label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.action-form-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.action-form-buttons button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.action-form-buttons button[type="submit"] {
+  color: white;
+  background-color: #6d5dfc;
+}
+
+.action-form-buttons button[type="submit"]:hover {
+  background-color: #5848e5;
+}
+
+.action-form-buttons .cancel-button {
+  color: #4b5563;
+  background-color: #e5e7eb;
+}
+
+.action-form-buttons .cancel-button:hover {
+  background-color: #d1d5db;
+}
+
+.actions-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.delete-action-button {
+  padding: 5px 9px;
+  color: #dc2626;
+  background-color: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.delete-action-button:hover {
+  background-color: #fee2e2;
 }

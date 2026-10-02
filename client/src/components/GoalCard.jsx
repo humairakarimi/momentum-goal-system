@@ -1,9 +1,13 @@
 import { useState } from "react";
+import MilestoneItem from "./MilestoneItem";
 
 function GoalCard({
   goal,
   onAddMilestone,
   onToggleMilestone,
+  onAddAction,
+  onToggleAction,
+  onDeleteAction,
   onEdit,
   onDelete,
 }) {
@@ -67,28 +71,17 @@ function GoalCard({
           </div>
         )}
 
-        {milestones.length > 0 ? (
-          <ul>
-            {milestones.map((milestone) => (
-              <li
-                key={milestone.id}
-                className={milestone.completed ? "milestone-completed" : ""}
-              >
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={milestone.completed}
-                    onChange={() => onToggleMilestone(goal.id, milestone.id)}
-                  />
-
-                  <span>{milestone.title}</span>
-                </label>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p>No milestones added yet.</p>
-        )}
+        {milestones.map((milestone) => (
+          <MilestoneItem
+            key={milestone.id}
+            goalId={goal.id}
+            milestone={milestone}
+            onToggleMilestone={onToggleMilestone}
+            onAddAction={onAddAction}
+            onToggleAction={onToggleAction}
+            onDeleteAction={onDeleteAction}
+          />
+        ))}
 
         {showMilestoneForm ? (
           <form onSubmit={handleMilestoneSubmit}>
