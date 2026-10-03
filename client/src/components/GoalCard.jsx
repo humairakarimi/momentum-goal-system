@@ -9,6 +9,7 @@ function GoalCard({
   onAddAction,
   onToggleAction,
   onDeleteAction,
+  onToggleToday,
   onEdit,
   onDelete,
 }) {
@@ -82,6 +83,7 @@ function GoalCard({
             onAddAction={onAddAction}
             onToggleAction={onToggleAction}
             onDeleteAction={onDeleteAction}
+            onToggleToday={onToggleToday}
           />
         ))}
 

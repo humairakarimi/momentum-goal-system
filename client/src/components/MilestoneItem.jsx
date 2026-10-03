@@ -8,6 +8,7 @@ function MilestoneItem({
   onDeleteMilestone,
   onToggleAction,
   onDeleteAction,
+  onToggleToday,
 }) {
   const [showActionForm, setShowActionForm] = useState(false);
   const [actionTitle, setActionTitle] = useState("");
@@ -106,15 +107,29 @@ function MilestoneItem({
                   <span>{action.title}</span>
                 </label>
 
-                <button
-                  type="button"
-                  className="delete-action-button"
-                  onClick={() =>
-                    onDeleteAction(goalId, milestone.id, action.id)
-                  }
-                >
-                  Delete
-                </button>
+                <div className="action-buttons">
+                  <button
+                    type="button"
+                    className={
+                      action.isToday ? "today-button selected" : "today-button"
+                    }
+                    onClick={() =>
+                      onToggleToday(goalId, milestone.id, action.id)
+                    }
+                  >
+                    {action.isToday ? "Remove from Today" : "Add to Today"}
+                  </button>
+
+                  <button
+                    type="button"
+                    className="delete-action-button"
+                    onClick={() =>
+                      onDeleteAction(goalId, milestone.id, action.id)
+                    }
+                  >
+                    Delete
+                  </button>
+                </div>
               </li>
             ))}
           </ul>

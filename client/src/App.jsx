@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 import GoalCard from "./components/GoalCard";
+import TodayDashboard from "./components/TodayDashboard";
 
 function App() {
   const [showGoalForm, setShowGoalForm] = useState(false);
@@ -17,6 +18,20 @@ function App() {
   useEffect(() => {
     localStorage.setItem("momentumGoals", JSON.stringify(goals));
   }, [goals]);
+
+  const todayActions = goals.flatMap((goal) =>
+    (goal.milestones || []).flatMap((milestone) =>
+      (milestone.actions || [])
+        .filter((action) => action.isToday)
+        .map((action) => ({
+          ...action,
+          goalId: goal.id,
+          goalTitle: goal.title,
+          milestoneId: milestone.id,
+          milestoneTitle: milestone.title,
+        })),
+    ),
+  );
 
   function handleSubmit(event) {
     event.preventDefault();
@@ -96,6 +111,7 @@ function App() {
       id: Date.now(),
       title: actionTitle,
       completed: false,
+      isToday: false,
     };
 
     const updatedGoals = goals.map((goal) => {
@@ -112,6 +128,37 @@ function App() {
             }
           : milestone,
       );
+
+      return {
+        ...goal,
+        milestones: updatedMilestones,
+      };
+    });
+
+    setGoals(updatedGoals);
+  }
+  function handleToggleToday(goalId, milestoneId, actionId) {
+    const updatedGoals = goals.map((goal) => {
+      if (goal.id !== goalId) {
+        return goal;
+      }
+
+      const updatedMilestones = (goal.milestones || []).map((milestone) => {
+        if (milestone.id !== milestoneId) {
+          return milestone;
+        }
+
+        const updatedActions = (milestone.actions || []).map((action) =>
+          action.id === actionId
+            ? { ...action, isToday: !action.isToday }
+            : action,
+        );
+
+        return {
+          ...milestone,
+          actions: updatedActions,
+        };
+      });
 
       return {
         ...goal,
@@ -286,32 +333,40 @@ function App() {
           </form>
         </section>
       ) : goals.length > 0 ? (
-        <section className="goals-section">
-          <div className="goals-heading">
-            <h2>Your goals</h2>
+        <div className="dashboard-layout">
+          <section className="goals-section">
+            <div className="goals-heading">
+              <h2>Your goals</h2>
 
-            <button type="button" onClick={() => setShowGoalForm(true)}>
-              Add another goal
-            </button>
-          </div>
+              <button type="button" onClick={() => setShowGoalForm(true)}>
+                Add another goal
+              </button>
+            </div>
 
-          <div className="goals-list">
-            {goals.map((goal) => (
-              <GoalCard
-                key={goal.id}
-                goal={goal}
-                onAddMilestone={handleAddMilestone}
-                onToggleMilestone={handleToggleMilestone}
-                onDeleteMilestone={handleDeleteMilestone}
-                onDeleteAction={handleDeleteAction}
-                onEdit={handleEditGoal}
-                onDelete={handleDeleteGoal}
-                onAddAction={handleAddAction}
-                onToggleAction={handleToggleAction}
-              />
-            ))}
-          </div>
-        </section>
+            <div className="goals-list">
+              {goals.map((goal) => (
+                <GoalCard
+                  key={goal.id}
+                  goal={goal}
+                  onAddMilestone={handleAddMilestone}
+                  onToggleMilestone={handleToggleMilestone}
+                  onDeleteMilestone={handleDeleteMilestone}
+                  onDeleteAction={handleDeleteAction}
+                  onEdit={handleEditGoal}
+                  onDelete={handleDeleteGoal}
+                  onToggleToday={handleToggleToday}
+                  onAddAction={handleAddAction}
+                  onToggleAction={handleToggleAction}
+                />
+              ))}
+            </div>
+          </section>
+          <TodayDashboard
+            todayActions={todayActions}
+            onToggleAction={handleToggleAction}
+            onToggleToday={handleToggleToday}
+          />
+        </div>
       ) : (
         <section className="welcome">
           <h2>Start building momentum</h2>
