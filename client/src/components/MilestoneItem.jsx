@@ -13,6 +13,12 @@ function MilestoneItem({
   const [actionTitle, setActionTitle] = useState("");
 
   const actions = milestone.actions || [];
+  const completedActions = actions.filter((action) => action.completed).length;
+
+  const actionProgress =
+    actions.length > 0
+      ? Math.round((completedActions / actions.length) * 100)
+      : 0;
 
   function handleActionSubmit(event) {
     event.preventDefault();
@@ -58,6 +64,28 @@ function MilestoneItem({
 
       <div className="actions">
         <h5>Actions</h5>
+        {actions.length > 0 && (
+          <div className="action-progress">
+            <p>
+              {completedActions} of {actions.length} completed —{" "}
+              {actionProgress}%
+            </p>
+
+            <div
+              className="action-progress-track"
+              role="progressbar"
+              aria-valuenow={actionProgress}
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-label="Action progress"
+            >
+              <div
+                className="action-progress-fill"
+                style={{ width: `${actionProgress}%` }}
+              ></div>
+            </div>
+          </div>
+        )}
 
         {actions.length > 0 ? (
           <ul className="actions-list">

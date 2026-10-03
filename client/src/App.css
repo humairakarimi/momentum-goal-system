@@ -473,3 +473,28 @@
 .delete-milestone-button:hover {
   background-color: #fee2e2;
 }
+
+.action-progress {
+  margin-bottom: 14px;
+}
+
+.action-progress p {
+  margin: 0 0 7px;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+.action-progress-track {
+  width: 100%;
+  height: 7px;
+  overflow: hidden;
+  background-color: #e5e7eb;
+  border-radius: 999px;
+}
+
+.action-progress-fill {
+  height: 100%;
+  background-color: #8b7ffc;
+  border-radius: 999px;
+  transition: width 0.25s ease;
+}

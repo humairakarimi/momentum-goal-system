@@ -108,6 +108,7 @@ function App() {
           ? {
               ...milestone,
               actions: [...(milestone.actions || []), newAction],
+              completed: false,
             }
           : milestone,
       );
@@ -138,6 +139,58 @@ function App() {
             : action,
         );
 
+        const allActionsCompleted =
+          updatedActions.length > 0 &&
+          updatedActions.every((action) => action.completed);
+
+        return {
+          ...milestone,
+          actions: updatedActions,
+          completed: allActionsCompleted,
+        };
+      });
+
+      return {
+        ...goal,
+        milestones: updatedMilestones,
+      };
+    });
+
+    setGoals(updatedGoals);
+  }
+  function handleDeleteMilestone(goalId, milestoneId) {
+    const updatedGoals = goals.map((goal) => {
+      if (goal.id !== goalId) {
+        return goal;
+      }
+
+      const updatedMilestones = (goal.milestones || []).filter(
+        (milestone) => milestone.id !== milestoneId,
+      );
+
+      return {
+        ...goal,
+        milestones: updatedMilestones,
+      };
+    });
+
+    setGoals(updatedGoals);
+  }
+  function handleDeleteAction(goalId, milestoneId, actionId) {
+    const updatedGoals = goals.map((goal) => {
+      if (goal.id !== goalId) {
+        return goal;
+      }
+
+      const updatedMilestones = (goal.milestones || []).map((milestone) => {
+        if (milestone.id !== milestoneId) {
+          return milestone;
+        }
+
+        const updatedActions = (milestone.actions || []).filter(
+          (action) => action.id !== actionId,
+        );
+
         return {
           ...milestone,
           actions: updatedActions,
@@ -152,53 +205,6 @@ function App() {
 
     setGoals(updatedGoals);
   }
-  function handleDeleteMilestone(goalId, milestoneId) {
-  const updatedGoals = goals.map((goal) => {
-    if (goal.id !== goalId) {
-      return goal;
-    }
-
-    const updatedMilestones = (goal.milestones || []).filter(
-      (milestone) => milestone.id !== milestoneId,
-    );
-
-    return {
-      ...goal,
-      milestones: updatedMilestones,
-    };
-  });
-
-  setGoals(updatedGoals);
-}
-  function handleDeleteAction(goalId, milestoneId, actionId) {
-  const updatedGoals = goals.map((goal) => {
-    if (goal.id !== goalId) {
-      return goal;
-    }
-
-    const updatedMilestones = (goal.milestones || []).map((milestone) => {
-      if (milestone.id !== milestoneId) {
-        return milestone;
-      }
-
-      const updatedActions = (milestone.actions || []).filter(
-        (action) => action.id !== actionId,
-      );
-
-      return {
-        ...milestone,
-        actions: updatedActions,
-      };
-    });
-
-    return {
-      ...goal,
-      milestones: updatedMilestones,
-    };
-  });
-
-  setGoals(updatedGoals);
-}
 
   function handleToggleMilestone(goalId, milestoneId) {
     const updatedGoals = goals.map((goal) => {
@@ -302,8 +308,6 @@ function App() {
                 onDelete={handleDeleteGoal}
                 onAddAction={handleAddAction}
                 onToggleAction={handleToggleAction}
-
-
               />
             ))}
           </div>
