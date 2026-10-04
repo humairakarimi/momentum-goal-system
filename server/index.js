@@ -1,4 +1,11 @@
+require("dotenv").config();
+
+const { Pool } = require("pg");
 const express = require("express");
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL_POOLED,
+});
 
 const app = express();
 const PORT = 5001;
@@ -11,6 +18,23 @@ app.get("/", (request, response) => {
   response.json({
     message: "Momentum API is running",
   });
+});
+
+app.get("/api/database-test", async (request, response) => {
+  try {
+    const result = await pool.query("SELECT NOW()");
+
+    response.json({
+      message: "Database connected successfully",
+      databaseTime: result.rows[0].now,
+    });
+  } catch (error) {
+    console.error(error);
+
+    response.status(500).json({
+      message: "Database connection failed",
+    });
+  }
 });
 
 app.get("/api/goals", (request, response) => {
