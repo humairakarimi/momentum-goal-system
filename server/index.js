@@ -30,6 +30,43 @@ app.post("/api/goals", (request, response) =>{
 }
 );
 
+app.put("/api/goals/:id", (request, response) => {
+  const goalId = Number(request.params.id);
+
+  const goal = goals.find((goal) => goal.id === goalId);
+
+  if(!goal) {
+    return response.status(404).json({
+      message: "Goal not found",
+    });
+  }
+
+  goal.title = request.body.title;
+  goal.description = request.body.description;
+  goal.targetDate = request.body.targetDate;
+
+  response.json(goal);
+})
+
+app.delete("/api/goals/:id", (request, response) => {
+  const goalId = Number(request.params.id);
+
+  const goalIndex = goals.findIndex((goal) => goal.id === goalId);
+
+  if (goalIndex === -1) {
+    return response.status(404).json({
+      message: "Goal not found",
+    });
+  }
+
+  const deletedGoal = goals.splice(goalIndex, 1);
+
+  response.json({
+    message: "Goal deleted successfully",
+    goal: deletedGoal[0],
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
