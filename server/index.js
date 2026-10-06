@@ -37,22 +37,56 @@ app.get("/api/database-test", async (request, response) => {
   }
 });
 
-app.get("/api/goals", (request, response) => {
-  response.json(goals);
-})
+app.get("/api/goals", async (request, response) => {
+  try {
+    const result = await pool.query(`
+      SELECT
+        id,
+        title,
+        description,
+        target_date AS "targetDate",
+        created_at AS "createdAt"
+      FROM goals
+      ORDER BY created_at DESC
+    `);
 
-app.post("/api/goals", (request, response) =>{
-  const newGoal = {
-    id: Date.now(),
-    title: request.body.title,
-    description: request.body.description,
-    targetDate: request.body.targetDate,
-    milestones: [],
-  };
-  goals.push(newGoal);
-  response.status(201).json(newGoal);
-}
-);
+    response.json(result.rows);
+  } catch (error) {
+    console.error(error);
+
+    response.status(500).json({
+      message: "Could not retrieve goals",
+    });
+  }
+});
+
+app.post("/api/goals", async (request, response) => {
+  try {
+    const { title, description, targetDate } = request.body;
+
+    const result = await pool.query(
+      `
+        INSERT INTO goals (title, description, target_date)
+        VALUES ($1, $2, $3)
+        RETURNING
+          id,
+          title,
+          description,
+          target_date AS "targetDate",
+          created_at AS "createdAt"
+      `,
+      [title, description, targetDate],
+    );
+
+    response.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+
+    response.status(500).json({
+      message: "Could not create goal",
+    });
+  }
+});
 
 app.put("/api/goals/:id", (request, response) => {
   const goalId = Number(request.params.id);
