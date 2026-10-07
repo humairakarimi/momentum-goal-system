@@ -44,7 +44,7 @@ app.get("/api/goals", async (request, response) => {
         id,
         title,
         description,
-        target_date AS "targetDate",
+        TO_CHAR(target_date, 'YYYY-MM-DD') AS "targetDate",
         created_at AS "createdAt"
       FROM goals
       ORDER BY created_at DESC
@@ -72,7 +72,7 @@ app.post("/api/goals", async (request, response) => {
           id,
           title,
           description,
-          target_date AS "targetDate",
+          TO_CHAR(target_date, 'YYYY-MM-DD') AS "targetDate",
           created_at AS "createdAt"
       `,
       [title, description, targetDate],
@@ -88,41 +88,82 @@ app.post("/api/goals", async (request, response) => {
   }
 });
 
-app.put("/api/goals/:id", (request, response) => {
-  const goalId = Number(request.params.id);
+app.put("/api/goals/:id", async (request, response) => {
+  try {
+    const goalId = Number(request.params.id);
+    const { title, description, targetDate } = request.body;
 
-  const goal = goals.find((goal) => goal.id === goalId);
+    const result = await pool.query(
+      `
+        UPDATE goals
+        SET title = $1,
+            description = $2,
+            target_date = $3
+        WHERE id = $4
+        RETURNING
+          id,
+          title,
+          description,
+          TO_CHAR(target_date, 'YYYY-MM-DD') AS "targetDate",
+          created_at AS "createdAt"
+      `,
+      [title, description, targetDate, goalId],
+    );
+        if (result.rows.length === 0) {
+      return response.status(404).json({
+        message: "Goal not found",
+      });
+    }
 
-  if(!goal) {
-    return response.status(404).json({
-      message: "Goal not found",
+    response.json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+
+    response.status(500).json({
+      message: "Could not update goal",
     });
   }
+});
 
-  goal.title = request.body.title;
-  goal.description = request.body.description;
-  goal.targetDate = request.body.targetDate;
 
-  response.json(goal);
-})
 
-app.delete("/api/goals/:id", (request, response) => {
-  const goalId = Number(request.params.id);
 
-  const goalIndex = goals.findIndex((goal) => goal.id === goalId);
 
-  if (goalIndex === -1) {
-    return response.status(404).json({
-      message: "Goal not found",
+app.delete("/api/goals/:id", async (request, response) => {
+  try {
+   const goalId = Number(request.params.id); 
+
+    const result = await pool.query(
+      `
+        DELETE FROM goals
+        WHERE id = $1
+        RETURNING
+          id,
+          title,
+          description,
+          TO_CHAR(target_date, 'YYYY-MM-DD') AS "targetDate",
+          created_at AS "createdAt"
+      `,
+      [goalId],
+    );
+
+    if (result.rows.length === 0) {
+      return response.status(404).json({
+        message: "Goal not found",
+      });
+    }
+
+    response.json({
+      message: "Goal deleted successfully",
+      goal: result.rows[0],
+    });
+  } catch (error) {
+    console.error(error);
+
+    response.status(500).json({
+      message: "Could not delete goal",
     });
   }
-
-  const deletedGoal = goals.splice(goalIndex, 1);
-
-  response.json({
-    message: "Goal deleted successfully",
-    goal: deletedGoal[0],
-  });
 });
 
 app.listen(PORT, () => {
