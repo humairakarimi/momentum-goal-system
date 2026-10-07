@@ -8,16 +8,27 @@ function App() {
   const [goalTitle, setGoalTitle] = useState("");
   const [goalDescription, setGoalDescription] = useState("");
   const [targetDate, setTargetDate] = useState("");
-  const [goals, setGoals] = useState(() => {
-    const storedGoals = localStorage.getItem("momentumGoals");
-
-    return storedGoals ? JSON.parse(storedGoals) : [];
-  });
+  const [goals, setGoals] = useState([]);
   const [editingGoalId, setEditingGoalId] = useState(null);
 
   useEffect(() => {
-    localStorage.setItem("momentumGoals", JSON.stringify(goals));
-  }, [goals]);
+  async function fetchGoals() {
+    try {
+      const response = await fetch("http://localhost:5001/api/goals");
+
+      if (!response.ok) {
+        throw new Error("Could not retrieve goals");
+      }
+
+      const data = await response.json();
+      setGoals(data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  fetchGoals();
+}, []);
 
   const todayActions = goals.flatMap((goal) =>
     (goal.milestones || []).flatMap((milestone) =>
@@ -33,39 +44,74 @@ function App() {
     ),
   );
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
-    if (editingGoalId !== null) {
-      const updatedGoals = goals.map((goal) =>
-        goal.id === editingGoalId
-          ? {
-              ...goal,
-              title: goalTitle,
-              description: goalDescription,
-              targetDate: targetDate,
-            }
-          : goal,
-      );
-
-      setGoals(updatedGoals);
-      setEditingGoalId(null);
-    } else {
-      const newGoal = {
-        id: Date.now(),
+    try {
+     if (editingGoalId !== null) {
+  const response = await fetch(
+    `http://localhost:5001/api/goals/${editingGoalId}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
         title: goalTitle,
         description: goalDescription,
-        targetDate: targetDate,
-        milestones: [],
-      };
+        targetDate,
+      }),
+    },
+  );
 
-      setGoals([...goals, newGoal]);
+  if (!response.ok) {
+    throw new Error("Could not update goal");
+  }
+
+  const updatedGoal = await response.json();
+
+  setGoals((currentGoals) =>
+    currentGoals.map((goal) =>
+      goal.id === editingGoalId
+        ? {
+            ...goal,
+            ...updatedGoal,
+          }
+        : goal,
+    ),
+  );
+
+  setEditingGoalId(null);
+}else {
+      const response = await fetch("http://localhost:5001/api/goals", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: goalTitle,
+          description: goalDescription,
+          targetDate,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Could not create goal");
+      }
+
+      const savedGoal = await response.json();
+
+      setGoals((currentGoals) => [...currentGoals, savedGoal]);
     }
 
     setGoalTitle("");
     setGoalDescription("");
     setTargetDate("");
-    setShowGoalForm(false);
+    setShowGoalForm(false); 
+    } catch (error){
+      console.error(error);
+    }
+
   }
 
   function handleEditGoal(goal) {
@@ -82,10 +128,26 @@ function App() {
     setEditingGoalId(null);
     setShowGoalForm(false);
   }
-  function handleDeleteGoal(goalId) {
-    const updatedGoals = goals.filter((goal) => goal.id !== goalId);
-    setGoals(updatedGoals);
+  async function handleDeleteGoal(goalId) {
+  try {
+    const response = await fetch(
+      `http://localhost:5001/api/goals/${goalId}`,
+      {
+        method: "DELETE",
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error("Could not delete goal");
+    }
+
+    setGoals((currentGoals) =>
+      currentGoals.filter((goal) => goal.id !== goalId),
+    );
+  } catch (error) {
+    console.error(error);
   }
+}
 
   function handleAddMilestone(goalId, milestoneTitle) {
     const newMilestone = {

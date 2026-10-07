@@ -1,4 +1,5 @@
 require("dotenv").config();
+const cors = require("cors");
 
 const { Pool } = require("pg");
 const express = require("express");
@@ -9,6 +10,14 @@ const pool = new Pool({
 
 const app = express();
 const PORT = 5001;
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+  }),
+);
+
+app.use(express.json());
 
 app.use(express.json());
 
