@@ -675,3 +675,8 @@
     order: -1;
   }
 }
+.loading {
+  padding: 80px 8%;
+  text-align: center;
+  color: #6b7280;
+}

@@ -175,6 +175,137 @@ app.delete("/api/goals/:id", async (request, response) => {
   }
 });
 
+app.post("/api/goals/:goalId/milestones", async (request, response) => {
+  try {
+    const goalId = request.params.goalId;
+    const { title } = request.body;
+
+    const result = await pool.query(
+      `
+        INSERT INTO milestones (goal_id, title)
+        VALUES ($1, $2)
+        RETURNING
+          id,
+          goal_id AS "goalId",
+          title,
+          completed,
+          created_at AS "createdAt"
+      `,
+      [goalId, title],
+    );
+
+    response.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+
+    response.status(500).json({
+      message: "Could not create milestone",
+    });
+  }
+});
+
+app.get("/api/goals/:goalId/milestones", async (request, response) => {
+  try {
+    const goalId = request.params.goalId;
+
+    const result = await pool.query(
+      `
+        SELECT
+          id,
+          goal_id AS "goalId",
+          title,
+          completed,
+          created_at AS "createdAt"
+        FROM milestones
+        WHERE goal_id = $1
+        ORDER BY created_at ASC
+      `,
+      [goalId],
+    );
+
+    response.json(result.rows);
+  } catch (error) {
+    console.error(error);
+
+    response.status(500).json({
+      message: "Could not retrieve milestones",
+    });
+  }
+});
+
+app.patch("/api/milestones/:id", async (request, response) => {
+  try {
+    const milestoneId = request.params.id;
+    const { completed } = request.body;
+
+    const result = await pool.query(
+      `
+        UPDATE milestones
+        SET completed = $1
+        WHERE id = $2
+        RETURNING
+          id,
+          goal_id AS "goalId",
+          title,
+          completed,
+          created_at AS "createdAt"
+      `,
+      [completed, milestoneId],
+    );
+
+    if (result.rows.length === 0) {
+      return response.status(404).json({
+        message: "Milestone not found",
+      });
+    }
+
+    response.json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+
+    response.status(500).json({
+      message: "Could not update milestone",
+    });
+  }
+});
+
+app.delete("/api/milestones/:id", async (request, response) => {
+  try {
+    const milestoneId = request.params.id;
+
+    const result = await pool.query(
+      `
+        DELETE FROM milestones
+        WHERE id = $1
+        RETURNING
+          id,
+          goal_id AS "goalId",
+          title,
+          completed,
+          created_at AS "createdAt"
+      `,
+      [milestoneId],
+    );
+
+    if (result.rows.length === 0) {
+      return response.status(404).json({
+        message: "Milestone not found",
+      });
+    }
+
+    response.json({
+      message: "Milestone deleted successfully",
+      milestone: result.rows[0],
+    });
+  } catch (error) {
+    console.error(error);
+
+    response.status(500).json({
+      message: "Could not delete milestone",
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

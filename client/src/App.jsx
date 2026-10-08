@@ -10,25 +10,48 @@ function App() {
   const [targetDate, setTargetDate] = useState("");
   const [goals, setGoals] = useState([]);
   const [editingGoalId, setEditingGoalId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-  async function fetchGoals() {
-    try {
-      const response = await fetch("http://localhost:5001/api/goals");
+    async function fetchGoals() {
+      try {
+        const goalsResponse = await fetch("http://localhost:5001/api/goals");
 
-      if (!response.ok) {
-        throw new Error("Could not retrieve goals");
+        if (!goalsResponse.ok) {
+          throw new Error("Could not retrieve goals");
+        }
+
+        const goalsData = await goalsResponse.json();
+
+        const goalsWithMilestones = await Promise.all(
+          goalsData.map(async (goal) => {
+            const milestonesResponse = await fetch(
+              `http://localhost:5001/api/goals/${goal.id}/milestones`,
+            );
+
+            if (!milestonesResponse.ok) {
+              throw new Error("Could not retrieve milestones");
+            }
+
+            const milestones = await milestonesResponse.json();
+
+            return {
+              ...goal,
+              milestones,
+            };
+          }),
+        );
+
+        setGoals(goalsWithMilestones);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setIsLoading(false);
       }
-
-      const data = await response.json();
-      setGoals(data);
-    } catch (error) {
-      console.error(error);
     }
-  }
 
-  fetchGoals();
-}, []);
+    fetchGoals();
+  }, []);
 
   const todayActions = goals.flatMap((goal) =>
     (goal.milestones || []).flatMap((milestone) =>
@@ -48,70 +71,69 @@ function App() {
     event.preventDefault();
 
     try {
-     if (editingGoalId !== null) {
-  const response = await fetch(
-    `http://localhost:5001/api/goals/${editingGoalId}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title: goalTitle,
-        description: goalDescription,
-        targetDate,
-      }),
-    },
-  );
+      if (editingGoalId !== null) {
+        const response = await fetch(
+          `http://localhost:5001/api/goals/${editingGoalId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              title: goalTitle,
+              description: goalDescription,
+              targetDate,
+            }),
+          },
+        );
 
-  if (!response.ok) {
-    throw new Error("Could not update goal");
-  }
+        if (!response.ok) {
+          throw new Error("Could not update goal");
+        }
 
-  const updatedGoal = await response.json();
+        const updatedGoal = await response.json();
 
-  setGoals((currentGoals) =>
-    currentGoals.map((goal) =>
-      goal.id === editingGoalId
-        ? {
-            ...goal,
-            ...updatedGoal,
-          }
-        : goal,
-    ),
-  );
+        setGoals((currentGoals) =>
+          currentGoals.map((goal) =>
+            goal.id === editingGoalId
+              ? {
+                  ...goal,
+                  ...updatedGoal,
+                }
+              : goal,
+          ),
+        );
 
-  setEditingGoalId(null);
-}else {
-      const response = await fetch("http://localhost:5001/api/goals", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: goalTitle,
-          description: goalDescription,
-          targetDate,
-        }),
-      });
+        setEditingGoalId(null);
+      } else {
+        const response = await fetch("http://localhost:5001/api/goals", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: goalTitle,
+            description: goalDescription,
+            targetDate,
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error("Could not create goal");
+        if (!response.ok) {
+          throw new Error("Could not create goal");
+        }
+
+        const savedGoal = await response.json();
+
+        setGoals((currentGoals) => [...currentGoals, savedGoal]);
       }
 
-      const savedGoal = await response.json();
-
-      setGoals((currentGoals) => [...currentGoals, savedGoal]);
-    }
-
-    setGoalTitle("");
-    setGoalDescription("");
-    setTargetDate("");
-    setShowGoalForm(false); 
-    } catch (error){
+      setGoalTitle("");
+      setGoalDescription("");
+      setTargetDate("");
+      setShowGoalForm(false);
+    } catch (error) {
       console.error(error);
     }
-
   }
 
   function handleEditGoal(goal) {
@@ -129,44 +151,66 @@ function App() {
     setShowGoalForm(false);
   }
   async function handleDeleteGoal(goalId) {
-  try {
-    const response = await fetch(
-      `http://localhost:5001/api/goals/${goalId}`,
-      {
-        method: "DELETE",
-      },
-    );
+    try {
+      const response = await fetch(
+        `http://localhost:5001/api/goals/${goalId}`,
+        {
+          method: "DELETE",
+        },
+      );
 
-    if (!response.ok) {
-      throw new Error("Could not delete goal");
+      if (!response.ok) {
+        throw new Error("Could not delete goal");
+      }
+
+      setGoals((currentGoals) =>
+        currentGoals.filter((goal) => goal.id !== goalId),
+      );
+    } catch (error) {
+      console.error(error);
     }
-
-    setGoals((currentGoals) =>
-      currentGoals.filter((goal) => goal.id !== goalId),
-    );
-  } catch (error) {
-    console.error(error);
   }
-}
 
-  function handleAddMilestone(goalId, milestoneTitle) {
-    const newMilestone = {
-      id: Date.now(),
-      title: milestoneTitle,
-      completed: false,
-      actions: [],
-    };
+  async function handleAddMilestone(goalId, milestoneTitle) {
+    try {
+      const response = await fetch(
+        `http://localhost:5001/api/goals/${goalId}/milestones`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: milestoneTitle,
+          }),
+        },
+      );
 
-    const updatedGoals = goals.map((goal) =>
-      goal.id === goalId
-        ? {
-            ...goal,
-            milestones: [...(goal.milestones || []), newMilestone],
-          }
-        : goal,
-    );
+      if (!response.ok) {
+        throw new Error("Could not create milestone");
+      }
 
-    setGoals(updatedGoals);
+      const savedMilestone = await response.json();
+
+      const updatedGoals = goals.map((goal) =>
+        goal.id === goalId
+          ? {
+              ...goal,
+              milestones: [
+                ...(goal.milestones || []),
+                {
+                  ...savedMilestone,
+                  actions: [],
+                },
+              ],
+            }
+          : goal,
+      );
+
+      setGoals(updatedGoals);
+    } catch (error) {
+      console.error(error);
+    }
   }
   function handleAddAction(goalId, milestoneId, actionTitle) {
     const newAction = {
@@ -267,24 +311,36 @@ function App() {
 
     setGoals(updatedGoals);
   }
-  function handleDeleteMilestone(goalId, milestoneId) {
-    const updatedGoals = goals.map((goal) => {
-      if (goal.id !== goalId) {
-        return goal;
-      }
+  async function handleDeleteMilestone(goalId, milestoneId) {
+  try {
+    const response = await fetch(
+      `http://localhost:5001/api/milestones/${milestoneId}`,
+      {
+        method: "DELETE",
+      },
+    );
 
-      const updatedMilestones = (goal.milestones || []).filter(
-        (milestone) => milestone.id !== milestoneId,
-      );
+    if (!response.ok) {
+      throw new Error("Could not delete milestone");
+    }
 
-      return {
-        ...goal,
-        milestones: updatedMilestones,
-      };
-    });
-
-    setGoals(updatedGoals);
+    setGoals((currentGoals) =>
+      currentGoals.map((goal) =>
+        goal.id === goalId
+          ? {
+              ...goal,
+              milestones: (goal.milestones || []).filter(
+                (milestone) => milestone.id !== milestoneId,
+              ),
+            }
+          : goal,
+      ),
+    );
+  } catch (error) {
+    console.error(error);
   }
+}
+
   function handleDeleteAction(goalId, milestoneId, actionId) {
     const updatedGoals = goals.map((goal) => {
       if (goal.id !== goalId) {
@@ -315,25 +371,53 @@ function App() {
     setGoals(updatedGoals);
   }
 
-  function handleToggleMilestone(goalId, milestoneId) {
-    const updatedGoals = goals.map((goal) => {
-      if (goal.id !== goalId) {
-        return goal;
-      }
+  async function handleToggleMilestone(goalId, milestoneId) {
+    try {
+      const goal = goals.find((goal) => goal.id === goalId);
 
-      const updatedMilestones = (goal.milestones || []).map((milestone) =>
-        milestone.id === milestoneId
-          ? { ...milestone, completed: !milestone.completed }
-          : milestone,
+      const milestone = (goal.milestones || []).find(
+        (milestone) => milestone.id === milestoneId,
       );
 
-      return {
-        ...goal,
-        milestones: updatedMilestones,
-      };
-    });
+      const response = await fetch(
+        `http://localhost:5001/api/milestones/${milestoneId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            completed: !milestone.completed,
+          }),
+        },
+      );
 
-    setGoals(updatedGoals);
+      if (!response.ok) {
+        throw new Error("Could not update milestone");
+      }
+
+      const updatedMilestone = await response.json();
+
+      setGoals((currentGoals) =>
+        currentGoals.map((goal) =>
+          goal.id === goalId
+            ? {
+                ...goal,
+                milestones: (goal.milestones || []).map((milestone) =>
+                  milestone.id === milestoneId
+                    ? {
+                        ...milestone,
+                        ...updatedMilestone,
+                      }
+                    : milestone,
+                ),
+              }
+            : goal,
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   return (
@@ -343,7 +427,11 @@ function App() {
         <p>Turn your goals into action.</p>
       </header>
 
-      {showGoalForm ? (
+      {isLoading ? (
+        <section className="loading">
+          <p>Loading your goals...</p>
+        </section>
+      ) : showGoalForm ? (
         <section className="goal-form">
           <h2>{editingGoalId !== null ? "Edit goal" : "Create a goal"}</h2>
 
@@ -446,5 +534,6 @@ function App() {
     </main>
   );
 }
+
 
 export default App;
