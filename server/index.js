@@ -306,6 +306,142 @@ app.delete("/api/milestones/:id", async (request, response) => {
   }
 });
 
+app.post("/api/milestones/:milestoneId/actions", async (request, response) => {
+  try {
+    const milestoneId = request.params.milestoneId;
+    const { title } = request.body;
+
+    const result = await pool.query(
+      `
+        INSERT INTO actions (milestone_id, title)
+        VALUES ($1, $2)
+        RETURNING
+          id,
+          milestone_id AS "milestoneId",
+          title,
+          completed,
+          is_today AS "isToday",
+          created_at AS "createdAt"
+      `,
+      [milestoneId, title],
+    );
+
+    response.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+
+    response.status(500).json({
+      message: "Could not create action",
+    });
+  }
+});
+
+app.get("/api/milestones/:milestoneId/actions", async (request, response) => {
+  try {
+    const milestoneId = request.params.milestoneId;
+
+    const result = await pool.query(
+      `
+        SELECT
+          id,
+          milestone_id AS "milestoneId",
+          title,
+          completed,
+          is_today AS "isToday",
+          created_at AS "createdAt"
+        FROM actions
+        WHERE milestone_id = $1
+        ORDER BY created_at ASC
+      `,
+      [milestoneId],
+    );
+
+    response.json(result.rows);
+  } catch (error) {
+    console.error(error);
+
+    response.status(500).json({
+      message: "Could not retrieve actions",
+    });
+  }
+});
+app.patch("/api/actions/:id", async (request, response) => {
+  try {
+    const actionId = request.params.id;
+    const { completed, isToday } = request.body;
+
+    const result = await pool.query(
+      `
+        UPDATE actions
+        SET
+          completed = COALESCE($1, completed),
+          is_today = COALESCE($2, is_today)
+        WHERE id = $3
+        RETURNING
+          id,
+          milestone_id AS "milestoneId",
+          title,
+          completed,
+          is_today AS "isToday",
+          created_at AS "createdAt"
+      `,
+      [completed, isToday, actionId],
+    );
+
+    if (result.rows.length === 0) {
+      return response.status(404).json({
+        message: "Action not found",
+      });
+    }
+
+    response.json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+
+    response.status(500).json({
+      message: "Could not update action",
+    });
+  }
+});
+
+app.delete("/api/actions/:id", async (request, response) => {
+  try {
+    const actionId = request.params.id;
+
+    const result = await pool.query(
+      `
+        DELETE FROM actions
+        WHERE id = $1
+        RETURNING
+          id,
+          milestone_id AS "milestoneId",
+          title,
+          completed,
+          is_today AS "isToday",
+          created_at AS "createdAt"
+      `,
+      [actionId],
+    );
+
+    if (result.rows.length === 0) {
+      return response.status(404).json({
+        message: "Action not found",
+      });
+    }
+
+    response.json({
+      message: "Action deleted successfully",
+      action: result.rows[0],
+    });
+  } catch (error) {
+    console.error(error);
+
+    response.status(500).json({
+      message: "Could not delete action",
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });

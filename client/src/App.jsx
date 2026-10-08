@@ -35,9 +35,28 @@ function App() {
 
             const milestones = await milestonesResponse.json();
 
+            const milestonesWithActions = await Promise.all(
+              milestones.map(async (milestone) => {
+                const actionsResponse = await fetch(
+                  `http://localhost:5001/api/milestones/${milestone.id}/actions`,
+                );
+
+                if (!actionsResponse.ok) {
+                  throw new Error("Could not retrieve actions");
+                }
+
+                const actions = await actionsResponse.json();
+
+                return {
+                  ...milestone,
+                  actions,
+                };
+              }),
+            );
+
             return {
               ...goal,
-              milestones,
+              milestones: milestonesWithActions,
             };
           }),
         );
@@ -212,163 +231,283 @@ function App() {
       console.error(error);
     }
   }
-  function handleAddAction(goalId, milestoneId, actionTitle) {
-    const newAction = {
-      id: Date.now(),
-      title: actionTitle,
-      completed: false,
-      isToday: false,
-    };
-
-    const updatedGoals = goals.map((goal) => {
-      if (goal.id !== goalId) {
-        return goal;
-      }
-
-      const updatedMilestones = (goal.milestones || []).map((milestone) =>
-        milestone.id === milestoneId
-          ? {
-              ...milestone,
-              actions: [...(milestone.actions || []), newAction],
-              completed: false,
-            }
-          : milestone,
+  async function handleAddAction(goalId, milestoneId, actionTitle) {
+    try {
+      const response = await fetch(
+        `http://localhost:5001/api/milestones/${milestoneId}/actions`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: actionTitle,
+          }),
+        },
       );
 
-      return {
-        ...goal,
-        milestones: updatedMilestones,
-      };
-    });
-
-    setGoals(updatedGoals);
-  }
-  function handleToggleToday(goalId, milestoneId, actionId) {
-    const updatedGoals = goals.map((goal) => {
-      if (goal.id !== goalId) {
-        return goal;
+      if (!response.ok) {
+        throw new Error("Could not create action");
       }
 
-      const updatedMilestones = (goal.milestones || []).map((milestone) => {
-        if (milestone.id !== milestoneId) {
-          return milestone;
-        }
+      const savedAction = await response.json();
 
-        const updatedActions = (milestone.actions || []).map((action) =>
-          action.id === actionId
-            ? { ...action, isToday: !action.isToday }
-            : action,
-        );
+      setGoals((currentGoals) =>
+        currentGoals.map((goal) => {
+          if (goal.id !== goalId) {
+            return goal;
+          }
 
-        return {
-          ...milestone,
-          actions: updatedActions,
-        };
-      });
-
-      return {
-        ...goal,
-        milestones: updatedMilestones,
-      };
-    });
-
-    setGoals(updatedGoals);
-  }
-
-  function handleToggleAction(goalId, milestoneId, actionId) {
-    const updatedGoals = goals.map((goal) => {
-      if (goal.id !== goalId) {
-        return goal;
-      }
-
-      const updatedMilestones = (goal.milestones || []).map((milestone) => {
-        if (milestone.id !== milestoneId) {
-          return milestone;
-        }
-
-        const updatedActions = (milestone.actions || []).map((action) =>
-          action.id === actionId
-            ? { ...action, completed: !action.completed }
-            : action,
-        );
-
-        const allActionsCompleted =
-          updatedActions.length > 0 &&
-          updatedActions.every((action) => action.completed);
-
-        return {
-          ...milestone,
-          actions: updatedActions,
-          completed: allActionsCompleted,
-        };
-      });
-
-      return {
-        ...goal,
-        milestones: updatedMilestones,
-      };
-    });
-
-    setGoals(updatedGoals);
-  }
-  async function handleDeleteMilestone(goalId, milestoneId) {
-  try {
-    const response = await fetch(
-      `http://localhost:5001/api/milestones/${milestoneId}`,
-      {
-        method: "DELETE",
-      },
-    );
-
-    if (!response.ok) {
-      throw new Error("Could not delete milestone");
+          return {
+            ...goal,
+            milestones: (goal.milestones || []).map((milestone) =>
+              milestone.id === milestoneId
+                ? {
+                    ...milestone,
+                    actions: [...(milestone.actions || []), savedAction],
+                  }
+                : milestone,
+            ),
+          };
+        }),
+      );
+    } catch (error) {
+      console.error(error);
     }
-
-    setGoals((currentGoals) =>
-      currentGoals.map((goal) =>
-        goal.id === goalId
-          ? {
-              ...goal,
-              milestones: (goal.milestones || []).filter(
-                (milestone) => milestone.id !== milestoneId,
-              ),
-            }
-          : goal,
-      ),
-    );
-  } catch (error) {
-    console.error(error);
   }
-}
+  async function handleToggleToday(goalId, milestoneId, actionId) {
+    try {
+      const goal = goals.find((goal) => goal.id === goalId);
 
-  function handleDeleteAction(goalId, milestoneId, actionId) {
-    const updatedGoals = goals.map((goal) => {
-      if (goal.id !== goalId) {
-        return goal;
+      const milestone = (goal.milestones || []).find(
+        (milestone) => milestone.id === milestoneId,
+      );
+
+      const action = (milestone.actions || []).find(
+        (action) => action.id === actionId,
+      );
+
+      const response = await fetch(
+        `http://localhost:5001/api/actions/${actionId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            isToday: !action.isToday,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Could not update Today status");
       }
 
-      const updatedMilestones = (goal.milestones || []).map((milestone) => {
-        if (milestone.id !== milestoneId) {
-          return milestone;
-        }
+      const updatedAction = await response.json();
 
-        const updatedActions = (milestone.actions || []).filter(
-          (action) => action.id !== actionId,
-        );
+      setGoals((currentGoals) =>
+        currentGoals.map((goal) =>
+          goal.id === goalId
+            ? {
+                ...goal,
+                milestones: (goal.milestones || []).map((milestone) =>
+                  milestone.id === milestoneId
+                    ? {
+                        ...milestone,
+                        actions: (milestone.actions || []).map((action) =>
+                          action.id === actionId ? updatedAction : action,
+                        ),
+                      }
+                    : milestone,
+                ),
+              }
+            : goal,
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
-        return {
-          ...milestone,
-          actions: updatedActions,
-        };
-      });
+  async function handleToggleAction(goalId, milestoneId, actionId) {
+    try {
+      const goal = goals.find((goal) => goal.id === goalId);
 
-      return {
-        ...goal,
-        milestones: updatedMilestones,
-      };
-    });
+      const milestone = (goal.milestones || []).find(
+        (milestone) => milestone.id === milestoneId,
+      );
 
-    setGoals(updatedGoals);
+      const action = (milestone.actions || []).find(
+        (action) => action.id === actionId,
+      );
+
+      const actionResponse = await fetch(
+        `http://localhost:5001/api/actions/${actionId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            completed: !action.completed,
+          }),
+        },
+      );
+
+      if (!actionResponse.ok) {
+        throw new Error("Could not update action");
+      }
+
+      const updatedAction = await actionResponse.json();
+
+      const updatedActions = (milestone.actions || []).map((action) =>
+        action.id === actionId ? updatedAction : action,
+      );
+
+      const allActionsCompleted =
+        updatedActions.length > 0 &&
+        updatedActions.every((action) => action.completed);
+
+      const milestoneResponse = await fetch(
+        `http://localhost:5001/api/milestones/${milestoneId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            completed: allActionsCompleted,
+          }),
+        },
+      );
+
+      if (!milestoneResponse.ok) {
+        throw new Error("Could not update milestone");
+      }
+
+      const updatedMilestone = await milestoneResponse.json();
+
+      setGoals((currentGoals) =>
+        currentGoals.map((goal) =>
+          goal.id === goalId
+            ? {
+                ...goal,
+                milestones: (goal.milestones || []).map((milestone) =>
+                  milestone.id === milestoneId
+                    ? {
+                        ...milestone,
+                        ...updatedMilestone,
+                        actions: updatedActions,
+                      }
+                    : milestone,
+                ),
+              }
+            : goal,
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function handleDeleteMilestone(goalId, milestoneId) {
+    try {
+      const response = await fetch(
+        `http://localhost:5001/api/milestones/${milestoneId}`,
+        {
+          method: "DELETE",
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Could not delete milestone");
+      }
+
+      setGoals((currentGoals) =>
+        currentGoals.map((goal) =>
+          goal.id === goalId
+            ? {
+                ...goal,
+                milestones: (goal.milestones || []).filter(
+                  (milestone) => milestone.id !== milestoneId,
+                ),
+              }
+            : goal,
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  async function handleDeleteAction(goalId, milestoneId, actionId) {
+    try {
+      const response = await fetch(
+        `http://localhost:5001/api/actions/${actionId}`,
+        {
+          method: "DELETE",
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Could not delete action");
+      }
+
+      const goal = goals.find((goal) => goal.id === goalId);
+
+      const milestone = (goal.milestones || []).find(
+        (milestone) => milestone.id === milestoneId,
+      );
+
+      const updatedActions = (milestone.actions || []).filter(
+        (action) => action.id !== actionId,
+      );
+
+      const allActionsCompleted =
+        updatedActions.length > 0 &&
+        updatedActions.every((action) => action.completed);
+
+      const milestoneResponse = await fetch(
+        `http://localhost:5001/api/milestones/${milestoneId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            completed: allActionsCompleted,
+          }),
+        },
+      );
+
+      if (!milestoneResponse.ok) {
+        throw new Error("Could not update milestone");
+      }
+
+      const updatedMilestone = await milestoneResponse.json();
+
+      setGoals((currentGoals) =>
+        currentGoals.map((goal) =>
+          goal.id === goalId
+            ? {
+                ...goal,
+                milestones: (goal.milestones || []).map((milestone) =>
+                  milestone.id === milestoneId
+                    ? {
+                        ...milestone,
+                        ...updatedMilestone,
+                        actions: updatedActions,
+                      }
+                    : milestone,
+                ),
+              }
+            : goal,
+        ),
+      );
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   async function handleToggleMilestone(goalId, milestoneId) {
@@ -534,6 +673,5 @@ function App() {
     </main>
   );
 }
-
 
 export default App;
