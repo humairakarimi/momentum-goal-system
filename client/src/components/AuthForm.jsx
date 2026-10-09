@@ -1,4 +1,7 @@
 import { useState } from "react";
+const API_URL = import.meta.env.VITE_API_URL;
+
+console.log("API URL:", API_URL);
 
 function AuthForm({ onAuthenticated }) {
   const [mode, setMode] = useState("login");
@@ -7,7 +10,6 @@ function AuthForm({ onAuthenticated }) {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const isRegistering = mode === "register";
 
   async function handleSubmit(event) {
@@ -19,21 +21,18 @@ function AuthForm({ onAuthenticated }) {
     try {
       const endpoint = isRegistering ? "register" : "login";
 
-      const response = await fetch(
-        `http://localhost:5001/api/auth/${endpoint}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
-          body: JSON.stringify({
-            ...(isRegistering && { name }),
-            email,
-            password,
-          }),
+      const response = await fetch(`${API_URL}/api/auth/${endpoint}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        credentials: "include",
+        body: JSON.stringify({
+          ...(isRegistering && { name }),
+          email,
+          password,
+        }),
+      });
 
       const data = await response.json();
 
@@ -103,9 +102,7 @@ function AuthForm({ onAuthenticated }) {
             required
           />
 
-          {errorMessage && (
-            <p className="auth-error">{errorMessage}</p>
-          )}
+          {errorMessage && <p className="auth-error">{errorMessage}</p>}
 
           <button type="submit" disabled={isSubmitting}>
             {isSubmitting
@@ -116,11 +113,7 @@ function AuthForm({ onAuthenticated }) {
           </button>
         </form>
 
-        <button
-          type="button"
-          className="auth-switch"
-          onClick={changeMode}
-        >
+        <button type="button" className="auth-switch" onClick={changeMode}>
           {isRegistering
             ? "Already have an account? Log in"
             : "New to Momentum? Create an account"}

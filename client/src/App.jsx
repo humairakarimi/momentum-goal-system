@@ -3,6 +3,7 @@ import "./App.css";
 import GoalCard from "./components/GoalCard";
 import TodayDashboard from "./components/TodayDashboard";
 import AuthForm from "./components/AuthForm";
+const API_URL = import.meta.env.VITE_API_URL;
 
 function App() {
   const [user, setUser] = useState(null);
@@ -19,7 +20,7 @@ function App() {
   useEffect(() => {
     async function checkAuthentication() {
       try {
-        const response = await fetch("http://localhost:5001/api/auth/me", {
+        const response = await fetch(`${API_URL}/api/auth/me`, {
           credentials: "include",
         });
 
@@ -49,7 +50,7 @@ function App() {
       setIsLoading(true);
 
       try {
-        const goalsResponse = await fetch("http://localhost:5001/api/goals", {
+        const goalsResponse = await fetch(`${API_URL}/api/goals`, {
           credentials: "include",
         });
 
@@ -62,7 +63,7 @@ function App() {
         const goalsWithMilestones = await Promise.all(
           goalsData.map(async (goal) => {
             const milestonesResponse = await fetch(
-              `http://localhost:5001/api/goals/${goal.id}/milestones`,
+              `${API_URL}/api/goals/${goal.id}/milestones`,
               {
                 credentials: "include",
               },
@@ -77,7 +78,7 @@ function App() {
             const milestonesWithActions = await Promise.all(
               milestones.map(async (milestone) => {
                 const actionsResponse = await fetch(
-                  `http://localhost:5001/api/milestones/${milestone.id}/actions`,
+                  `${API_URL}/api/milestones/${milestone.id}/actions`,
                   {
                     credentials: "include",
                   },
@@ -136,47 +137,12 @@ function App() {
 
     try {
       if (editingGoalId !== null) {
-        const response = await fetch(
-          `http://localhost:5001/api/goals/${editingGoalId}`,
-          {
-            method: "PUT",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              title: goalTitle,
-              description: goalDescription,
-              targetDate,
-            }),
-          },
-        );
-
-        if (!response.ok) {
-          throw new Error("Could not update goal");
-        }
-
-        const updatedGoal = await response.json();
-
-        setGoals((currentGoals) =>
-          currentGoals.map((goal) =>
-            goal.id === editingGoalId
-              ? {
-                  ...goal,
-                  ...updatedGoal,
-                }
-              : goal,
-          ),
-        );
-
-        setEditingGoalId(null);
-      } else {
-        const response = await fetch("http://localhost:5001/api/goals", {
-          method: "POST",
-          credentials: "include",
+        const response = await fetch(`${API_URL}/api/goals/${editingGoalId}`, {
+          method: "PUT",
           headers: {
             "Content-Type": "application/json",
           },
+          credentials: "include",
           body: JSON.stringify({
             title: goalTitle,
             description: goalDescription,
@@ -184,13 +150,45 @@ function App() {
           }),
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-          throw new Error("Could not create goal");
+          throw new Error(data.message || "Could not update goal");
         }
 
-        const savedGoal = await response.json();
+        setGoals((currentGoals) =>
+          currentGoals.map((goal) =>
+            goal.id === editingGoalId
+              ? {
+                  ...goal,
+                  ...data,
+                }
+              : goal,
+          ),
+        );
 
-        setGoals((currentGoals) => [...currentGoals, savedGoal]);
+        setEditingGoalId(null);
+      } else {
+        const response = await fetch(`${API_URL}/api/goals`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            title: goalTitle,
+            description: goalDescription,
+            targetDate,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || "Could not create goal");
+        }
+
+        setGoals((currentGoals) => [...currentGoals, data]);
       }
 
       setGoalTitle("");
@@ -226,13 +224,10 @@ function App() {
     }
 
     try {
-      const response = await fetch(
-        `http://localhost:5001/api/goals/${goalId}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        },
-      );
+      const response = await fetch(`${API_URL}/api/goals/${goalId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
 
       if (!response.ok) {
         throw new Error("Could not delete goal");
@@ -249,7 +244,7 @@ function App() {
   async function handleAddMilestone(goalId, milestoneTitle) {
     try {
       const response = await fetch(
-        `http://localhost:5001/api/goals/${goalId}/milestones`,
+        `${API_URL}/api/goals/${goalId}/milestones`,
         {
           method: "POST",
           credentials: "include",
@@ -291,7 +286,7 @@ function App() {
   async function handleAddAction(goalId, milestoneId, actionTitle) {
     try {
       const response = await fetch(
-        `http://localhost:5001/api/milestones/${milestoneId}/actions`,
+        `${API_URL}/api/milestones/${milestoneId}/actions`,
         {
           method: "POST",
           credentials: "include",
@@ -345,19 +340,16 @@ function App() {
         (action) => action.id === actionId,
       );
 
-      const response = await fetch(
-        `http://localhost:5001/api/actions/${actionId}`,
-        {
-          method: "PATCH",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            isToday: !action.isToday,
-          }),
+      const response = await fetch(`${API_URL}/api/actions/${actionId}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          isToday: !action.isToday,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error("Could not update Today status");
@@ -401,19 +393,16 @@ function App() {
         (action) => action.id === actionId,
       );
 
-      const actionResponse = await fetch(
-        `http://localhost:5001/api/actions/${actionId}`,
-        {
-          method: "PATCH",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            completed: !action.completed,
-          }),
+      const actionResponse = await fetch(`${API_URL}/api/actions/${actionId}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          completed: !action.completed,
+        }),
+      });
 
       if (!actionResponse.ok) {
         throw new Error("Could not update action");
@@ -430,7 +419,7 @@ function App() {
         updatedActions.every((action) => action.completed);
 
       const milestoneResponse = await fetch(
-        `http://localhost:5001/api/milestones/${milestoneId}`,
+        `${API_URL}/api/milestones/${milestoneId}`,
         {
           method: "PATCH",
           credentials: "include",
@@ -482,13 +471,10 @@ function App() {
     }
 
     try {
-      const response = await fetch(
-        `http://localhost:5001/api/milestones/${milestoneId}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        },
-      );
+      const response = await fetch(`${API_URL}/api/milestones/${milestoneId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
 
       if (!response.ok) {
         throw new Error("Could not delete milestone");
@@ -521,13 +507,10 @@ function App() {
     }
 
     try {
-      const response = await fetch(
-        `http://localhost:5001/api/actions/${actionId}`,
-        {
-          method: "DELETE",
-          credentials: "include",
-        },
-      );
+      const response = await fetch(`${API_URL}/api/actions/${actionId}`, {
+        method: "DELETE",
+        credentials: "include",
+      });
 
       if (!response.ok) {
         throw new Error("Could not delete action");
@@ -548,7 +531,7 @@ function App() {
         updatedActions.every((action) => action.completed);
 
       const milestoneResponse = await fetch(
-        `http://localhost:5001/api/milestones/${milestoneId}`,
+        `${API_URL}/api/milestones/${milestoneId}`,
         {
           method: "PATCH",
           credentials: "include",
@@ -598,19 +581,16 @@ function App() {
         (milestone) => milestone.id === milestoneId,
       );
 
-      const response = await fetch(
-        `http://localhost:5001/api/milestones/${milestoneId}`,
-        {
-          method: "PATCH",
-          credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            completed: !milestone.completed,
-          }),
+      const response = await fetch(`${API_URL}/api/milestones/${milestoneId}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
         },
-      );
+        body: JSON.stringify({
+          completed: !milestone.completed,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error("Could not update milestone");
@@ -641,19 +621,22 @@ function App() {
   }
   async function handleLogout() {
     try {
-      const response = await fetch("http://localhost:5001/api/auth/logout", {
+      const response = await fetch(`${API_URL}/api/auth/logout`, {
         method: "POST",
         credentials: "include",
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error("Could not log out");
+        throw new Error(data.message || "Could not log out");
       }
 
       setUser(null);
       setGoals([]);
       setShowGoalForm(false);
       setEditingGoalId(null);
+      setAppError("");
     } catch (error) {
       handleAppError(error);
     }
