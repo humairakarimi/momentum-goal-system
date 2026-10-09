@@ -610,7 +610,25 @@ function App() {
       console.error(error);
     }
   }
+  async function handleLogout() {
+    try {
+      const response = await fetch("http://localhost:5001/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
 
+      if (!response.ok) {
+        throw new Error("Could not log out");
+      }
+
+      setUser(null);
+      setGoals([]);
+      setShowGoalForm(false);
+      setEditingGoalId(null);
+    } catch (error) {
+      console.error(error);
+    }
+  }
   if (isCheckingAuth) {
     return null;
   }
@@ -627,7 +645,18 @@ function App() {
     <main className="app">
       <header className="header">
         <h1>Momentum</h1>
-        <p>Turn your goals into action.</p>
+
+        <div className="header-user">
+          <span>Hi, {user.name}</span>
+
+          <button
+            type="button"
+            className="logout-button"
+            onClick={handleLogout}
+          >
+            Log out
+          </button>
+        </div>
       </header>
       {showGoalForm ? (
         <section className="goal-form">
