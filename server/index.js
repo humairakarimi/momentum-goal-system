@@ -12,11 +12,13 @@ const pool = new Pool({
 });
 
 const app = express();
-const PORT = 5001;
+const PORT = process.env.PORT || 5001;
+
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: CLIENT_URL,
     credentials: true,
   }),
 );
@@ -130,16 +132,13 @@ app.post("/api/goals", requireAuthentication, async (request, response) => {
   }
 });
 
-app.put(
-  "/api/goals/:id",
-  requireAuthentication,
-  async (request, response) => {
-    try {
-      const goalId = request.params.id;
-      const { title, description, targetDate } = request.body;
+app.put("/api/goals/:id", requireAuthentication, async (request, response) => {
+  try {
+    const goalId = request.params.id;
+    const { title, description, targetDate } = request.body;
 
-      const result = await pool.query(
-        `
+    const result = await pool.query(
+      `
           UPDATE goals
           SET
             title = $1,
@@ -154,31 +153,24 @@ app.put(
             TO_CHAR(target_date, 'YYYY-MM-DD') AS "targetDate",
             created_at AS "createdAt"
         `,
-        [
-          title,
-          description,
-          targetDate,
-          goalId,
-          request.userId,
-        ],
-      );
+      [title, description, targetDate, goalId, request.userId],
+    );
 
-      if (result.rows.length === 0) {
-        return response.status(404).json({
-          message: "Goal not found",
-        });
-      }
-
-      response.json(result.rows[0]);
-    } catch (error) {
-      console.error(error);
-
-      response.status(500).json({
-        message: "Could not update goal",
+    if (result.rows.length === 0) {
+      return response.status(404).json({
+        message: "Goal not found",
       });
     }
-  },
-);
+
+    response.json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+
+    response.status(500).json({
+      message: "Could not update goal",
+    });
+  }
+});
 
 app.delete(
   "/api/goals/:id",
@@ -508,12 +500,7 @@ app.patch(
             is_today AS "isToday",
             created_at AS "createdAt"
         `,
-        [
-          completed ?? null,
-          isToday ?? null,
-          actionId,
-          request.userId,
-        ],
+        [completed ?? null, isToday ?? null, actionId, request.userId],
       );
 
       if (result.rows.length === 0) {
@@ -645,7 +632,7 @@ app.post("/api/auth/register", async (request, response) => {
 
     response.cookie("token", token, {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       secure: process.env.NODE_ENV === "production",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -718,7 +705,7 @@ app.post("/api/auth/login", async (request, response) => {
 
     response.cookie("token", token, {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       secure: process.env.NODE_ENV === "production",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -776,7 +763,7 @@ app.get("/api/auth/me", requireAuthentication, async (request, response) => {
 app.post("/api/auth/logout", (request, response) => {
   response.clearCookie("token", {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     secure: process.env.NODE_ENV === "production",
   });
 
