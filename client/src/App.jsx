@@ -4,6 +4,7 @@ import GoalCard from "./components/GoalCard";
 import TodayDashboard from "./components/TodayDashboard";
 import AuthForm from "./components/AuthForm";
 const API_URL = import.meta.env.VITE_API_URL;
+import DashboardSummary from "./components/DashboardSummary";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -127,6 +128,12 @@ function App() {
         })),
     ),
   );
+  const allMilestones = goals.flatMap((goal) => goal.milestones || []);
+
+  const completedMilestones = allMilestones.filter(
+    (milestone) => milestone.completed,
+  ).length;
+
   function handleAppError(error) {
     console.error(error);
     setAppError(error.message || "Something went wrong. Please try again.");
@@ -656,10 +663,24 @@ function App() {
   return (
     <main className="app">
       <header className="header">
-        <h1>Momentum</h1>
+        <div className="brand">
+          <span className="brand-mark">M</span>
+
+          <div>
+            <h1>Momentum</h1>
+            <p>Goal-to-action workspace</p>
+          </div>
+        </div>
 
         <div className="header-user">
-          <span>Hi, {user.name}</span>
+          <span className="user-avatar">
+            {user.name.charAt(0).toUpperCase()}
+          </span>
+
+          <div className="user-details">
+            <strong>{user.name}</strong>
+            <span>Keep moving forward</span>
+          </div>
 
           <button
             type="button"
@@ -731,40 +752,50 @@ function App() {
           </form>
         </section>
       ) : goals.length > 0 ? (
-        <div className="dashboard-layout">
-          <section className="goals-section">
-            <div className="goals-heading">
-              <h2>Your goals</h2>
-
-              <button type="button" onClick={() => setShowGoalForm(true)}>
-                Add another goal
-              </button>
-            </div>
-
-            <div className="goals-list">
-              {goals.map((goal) => (
-                <GoalCard
-                  key={goal.id}
-                  goal={goal}
-                  onAddMilestone={handleAddMilestone}
-                  onToggleMilestone={handleToggleMilestone}
-                  onDeleteMilestone={handleDeleteMilestone}
-                  onDeleteAction={handleDeleteAction}
-                  onEdit={handleEditGoal}
-                  onDelete={handleDeleteGoal}
-                  onToggleToday={handleToggleToday}
-                  onAddAction={handleAddAction}
-                  onToggleAction={handleToggleAction}
-                />
-              ))}
-            </div>
-          </section>
-          <TodayDashboard
-            todayActions={todayActions}
-            onToggleAction={handleToggleAction}
-            onToggleToday={handleToggleToday}
+        <>
+          <DashboardSummary
+            userName={user.name}
+            totalGoals={goals.length}
+            totalMilestones={allMilestones.length}
+            completedMilestones={completedMilestones}
+            todayCount={todayActions.length}
           />
-        </div>
+
+          <div className="dashboard-layout">
+            <section className="goals-section">
+              <div className="goals-heading">
+                <h2>Your goals</h2>
+
+                <button type="button" onClick={() => setShowGoalForm(true)}>
+                  Add another goal
+                </button>
+              </div>
+
+              <div className="goals-list">
+                {goals.map((goal) => (
+                  <GoalCard
+                    key={goal.id}
+                    goal={goal}
+                    onAddMilestone={handleAddMilestone}
+                    onToggleMilestone={handleToggleMilestone}
+                    onDeleteMilestone={handleDeleteMilestone}
+                    onDeleteAction={handleDeleteAction}
+                    onEdit={handleEditGoal}
+                    onDelete={handleDeleteGoal}
+                    onToggleToday={handleToggleToday}
+                    onAddAction={handleAddAction}
+                    onToggleAction={handleToggleAction}
+                  />
+                ))}
+              </div>
+            </section>
+            <TodayDashboard
+              todayActions={todayActions}
+              onToggleAction={handleToggleAction}
+              onToggleToday={handleToggleToday}
+            />
+          </div>
+        </>
       ) : (
         <section className="welcome">
           <h2>Start building momentum</h2>

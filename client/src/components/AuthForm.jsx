@@ -57,70 +57,70 @@ function AuthForm({ onAuthenticated }) {
   }
 
   return (
-    <main className="auth-page">
-      <section className="auth-card">
-        <h1>Momentum</h1>
+  <main className="auth-page">
+    <section className="auth-card">
+      <h1>Momentum</h1>
 
-        <h2>{isRegistering ? "Create your account" : "Welcome back"}</h2>
+      <h2>{isRegistering ? "Create your account" : "Welcome back"}</h2>
 
-        <p>
-          {isRegistering
-            ? "Create an account to start turning your goals into action."
-            : "Log in to continue building momentum."}
-        </p>
+      <p className="auth-description">
+        {isRegistering
+          ? "Create an account to start turning your goals into action."
+          : "Log in to continue building momentum."}
+      </p>
 
-        <form onSubmit={handleSubmit}>
-          {isRegistering && (
-            <>
-              <label htmlFor="auth-name">Name</label>
-              <input
-                id="auth-name"
-                type="text"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                required
-              />
-            </>
-          )}
+      <form onSubmit={handleSubmit}>
+        {isRegistering && (
+          <>
+            <label htmlFor="auth-name">Name</label>
+            <input
+              id="auth-name"
+              type="text"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              required
+            />
+          </>
+        )}
 
-          <label htmlFor="auth-email">Email</label>
-          <input
-            id="auth-email"
-            type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-            required
-          />
+        <label htmlFor="auth-email">Email</label>
+        <input
+          id="auth-email"
+          type="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          required
+        />
 
-          <label htmlFor="auth-password">Password</label>
-          <input
-            id="auth-password"
-            type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            minLength="8"
-            required
-          />
+        <label htmlFor="auth-password">Password</label>
+        <input
+          id="auth-password"
+          type="password"
+          value={password}
+          onChange={(event) => setPassword(event.target.value)}
+          minLength="8"
+          required
+        />
 
-          {errorMessage && <p className="auth-error">{errorMessage}</p>}
+        {errorMessage && <p className="auth-error">{errorMessage}</p>}
 
-          <button type="submit" disabled={isSubmitting}>
-            {isSubmitting
-              ? "Please wait..."
-              : isRegistering
-                ? "Create account"
-                : "Log in"}
-          </button>
-        </form>
-
-        <button type="button" className="auth-switch" onClick={changeMode}>
-          {isRegistering
-            ? "Already have an account? Log in"
-            : "New to Momentum? Create an account"}
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting
+            ? "Please wait..."
+            : isRegistering
+              ? "Create account"
+              : "Log in"}
         </button>
-      </section>
-    </main>
-  );
+      </form>
+
+      <button type="button" className="auth-switch" onClick={changeMode}>
+        {isRegistering
+          ? "Already have an account? Log in"
+          : "New to Momentum? Create an account"}
+      </button>
+    </section>
+  </main>
+);
 }
 
 export default AuthForm;

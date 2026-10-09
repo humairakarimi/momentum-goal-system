@@ -59,7 +59,8 @@ function MilestoneItem({
           className="delete-milestone-button"
           onClick={() => onDeleteMilestone(goalId, milestone.id)}
         >
-          Delete
+          <span aria-hidden="true">🗑</span>
+<span className="sr-only">Delete action</span>
         </button>
       </div>
 
@@ -127,7 +128,8 @@ function MilestoneItem({
                       onDeleteAction(goalId, milestone.id, action.id)
                     }
                   >
-                    Delete
+                    <span aria-hidden="true">🗑</span>
+<span className="sr-only">Delete action</span>
                   </button>
                 </div>
               </li>
