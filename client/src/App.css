@@ -821,3 +821,117 @@
   border-radius: 7px;
   cursor: pointer;
 }
+
+@media (max-width: 768px) {
+  .header {
+    padding: 18px 5%;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .header h1 {
+    font-size: 1.8rem;
+  }
+
+  .header-user {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+  }
+
+  .dashboard-layout {
+    display: block;
+    width: 92%;
+    margin: 30px auto;
+  }
+
+  .goals-section {
+    width: 100%;
+  }
+
+  .goals-heading {
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .goals-heading h2 {
+    margin: 0;
+    font-size: 1.8rem;
+  }
+
+  .goals-heading button {
+    padding: 10px 14px;
+  }
+
+  .goals-list {
+    grid-template-columns: 1fr;
+  }
+
+  .goal-card {
+    padding: 24px;
+  }
+
+  .welcome,
+  .goal-form {
+    width: 92%;
+    margin: 40px auto;
+    padding: 32px 22px;
+  }
+
+  .form-actions,
+  .milestone-actions,
+  .action-form-buttons {
+    flex-direction: column;
+  }
+
+  .form-actions button,
+  .milestone-actions button,
+  .action-form-buttons button {
+    width: 100%;
+  }
+
+  .action-buttons {
+    flex-wrap: wrap;
+  }
+
+  .auth-card {
+    padding: 34px 24px;
+  }
+
+  .app-error {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    flex-direction: column;
+  }
+
+  .header-user {
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .goals-heading {
+    flex-direction: column;
+  }
+
+  .goals-heading button {
+    width: 100%;
+  }
+
+  .goal-card {
+    padding: 20px;
+  }
+
+  .goal-card h3 {
+    font-size: 1.35rem;
+  }
+
+  .app-error {
+    flex-direction: column;
+  }
+}
