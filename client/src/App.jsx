@@ -14,6 +14,7 @@ function App() {
   const [goals, setGoals] = useState([]);
   const [editingGoalId, setEditingGoalId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [appError, setAppError] = useState("");
 
   useEffect(() => {
     async function checkAuthentication() {
@@ -104,7 +105,7 @@ function App() {
 
         setGoals(goalsWithMilestones);
       } catch (error) {
-        console.error(error);
+        handleAppError(error);
       } finally {
         setIsLoading(false);
       }
@@ -125,6 +126,10 @@ function App() {
         })),
     ),
   );
+  function handleAppError(error) {
+    console.error(error);
+    setAppError(error.message || "Something went wrong. Please try again.");
+  }
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -193,7 +198,7 @@ function App() {
       setTargetDate("");
       setShowGoalForm(false);
     } catch (error) {
-      console.error(error);
+      handleAppError(error);
     }
   }
 
@@ -237,7 +242,7 @@ function App() {
         currentGoals.filter((goal) => goal.id !== goalId),
       );
     } catch (error) {
-      console.error(error);
+      handleAppError(error);
     }
   }
 
@@ -280,7 +285,7 @@ function App() {
 
       setGoals(updatedGoals);
     } catch (error) {
-      console.error(error);
+      handleAppError(error);
     }
   }
   async function handleAddAction(goalId, milestoneId, actionTitle) {
@@ -325,7 +330,7 @@ function App() {
         }),
       );
     } catch (error) {
-      console.error(error);
+      handleAppError(error);
     }
   }
   async function handleToggleToday(goalId, milestoneId, actionId) {
@@ -380,7 +385,7 @@ function App() {
         ),
       );
     } catch (error) {
-      console.error(error);
+      handleAppError(error);
     }
   }
 
@@ -463,7 +468,7 @@ function App() {
         ),
       );
     } catch (error) {
-      console.error(error);
+      handleAppError(error);
     }
   }
 
@@ -502,7 +507,7 @@ function App() {
         ),
       );
     } catch (error) {
-      console.error(error);
+      handleAppError(error);
     }
   }
 
@@ -581,7 +586,7 @@ function App() {
         ),
       );
     } catch (error) {
-      console.error(error);
+      handleAppError(error);
     }
   }
 
@@ -631,7 +636,7 @@ function App() {
         ),
       );
     } catch (error) {
-      console.error(error);
+      handleAppError(error);
     }
   }
   async function handleLogout() {
@@ -650,7 +655,7 @@ function App() {
       setShowGoalForm(false);
       setEditingGoalId(null);
     } catch (error) {
-      console.error(error);
+      handleAppError(error);
     }
   }
   if (isCheckingAuth) {
@@ -682,6 +687,15 @@ function App() {
           </button>
         </div>
       </header>
+      {appError && (
+        <div className="app-error" role="alert">
+          <span>{appError}</span>
+
+          <button type="button" onClick={() => setAppError("")}>
+            Dismiss
+          </button>
+        </div>
+      )}
       {showGoalForm ? (
         <section className="goal-form">
           <h2>{editingGoalId !== null ? "Edit goal" : "Create a goal"}</h2>
