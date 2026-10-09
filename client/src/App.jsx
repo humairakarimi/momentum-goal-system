@@ -212,6 +212,14 @@ function App() {
     setShowGoalForm(false);
   }
   async function handleDeleteGoal(goalId) {
+    const shouldDelete = window.confirm(
+      "Are you sure you want to delete this goal? Its milestones and actions will also be deleted.",
+    );
+
+    if (!shouldDelete) {
+      return;
+    }
+
     try {
       const response = await fetch(
         `http://localhost:5001/api/goals/${goalId}`,
@@ -460,6 +468,14 @@ function App() {
   }
 
   async function handleDeleteMilestone(goalId, milestoneId) {
+    const shouldDelete = window.confirm(
+      "Are you sure you want to delete this milestone? Its actions will also be deleted.",
+    );
+
+    if (!shouldDelete) {
+      return;
+    }
+
     try {
       const response = await fetch(
         `http://localhost:5001/api/milestones/${milestoneId}`,
@@ -491,6 +507,14 @@ function App() {
   }
 
   async function handleDeleteAction(goalId, milestoneId, actionId) {
+    const shouldDelete = window.confirm(
+      "Are you sure you want to delete this action?",
+    );
+
+    if (!shouldDelete) {
+      return;
+    }
+
     try {
       const response = await fetch(
         `http://localhost:5001/api/actions/${actionId}`,
