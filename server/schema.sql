@@ -1,5 +1,16 @@
+CREATE TABLE IF NOT EXISTS users (
+  id BIGSERIAL PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS goals (
   id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL
+    REFERENCES users(id)
+    ON DELETE CASCADE,
   title VARCHAR(255) NOT NULL,
   description TEXT NOT NULL,
   target_date DATE NOT NULL,
@@ -26,6 +37,8 @@ CREATE TABLE IF NOT EXISTS actions (
   is_today BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
+CREATE INDEX IF NOT EXISTS goals_user_id_index
+ON goals(user_id);
 
 CREATE INDEX IF NOT EXISTS milestones_goal_id_index
 ON milestones(goal_id);

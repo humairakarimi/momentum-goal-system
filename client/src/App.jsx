@@ -2,8 +2,11 @@ import { useEffect, useState } from "react";
 import "./App.css";
 import GoalCard from "./components/GoalCard";
 import TodayDashboard from "./components/TodayDashboard";
+import AuthForm from "./components/AuthForm";
 
 function App() {
+  const [user, setUser] = useState(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [showGoalForm, setShowGoalForm] = useState(false);
   const [goalTitle, setGoalTitle] = useState("");
   const [goalDescription, setGoalDescription] = useState("");
@@ -13,9 +16,41 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchGoals() {
+    async function checkAuthentication() {
       try {
-        const goalsResponse = await fetch("http://localhost:5001/api/goals");
+        const response = await fetch("http://localhost:5001/api/auth/me", {
+          credentials: "include",
+        });
+
+        if (!response.ok) {
+          setUser(null);
+          return;
+        }
+
+        const data = await response.json();
+        setUser(data.user);
+      } catch (error) {
+        console.error(error);
+        setUser(null);
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    }
+
+    checkAuthentication();
+  }, []);
+  useEffect(() => {
+    async function fetchGoals() {
+      if (!user) {
+        return;
+      }
+
+      setIsLoading(true);
+
+      try {
+        const goalsResponse = await fetch("http://localhost:5001/api/goals", {
+          credentials: "include",
+        });
 
         if (!goalsResponse.ok) {
           throw new Error("Could not retrieve goals");
@@ -27,6 +62,9 @@ function App() {
           goalsData.map(async (goal) => {
             const milestonesResponse = await fetch(
               `http://localhost:5001/api/goals/${goal.id}/milestones`,
+              {
+                credentials: "include",
+              },
             );
 
             if (!milestonesResponse.ok) {
@@ -39,6 +77,9 @@ function App() {
               milestones.map(async (milestone) => {
                 const actionsResponse = await fetch(
                   `http://localhost:5001/api/milestones/${milestone.id}/actions`,
+                  {
+                    credentials: "include",
+                  },
                 );
 
                 if (!actionsResponse.ok) {
@@ -70,8 +111,7 @@ function App() {
     }
 
     fetchGoals();
-  }, []);
-
+  }, [user]);
   const todayActions = goals.flatMap((goal) =>
     (goal.milestones || []).flatMap((milestone) =>
       (milestone.actions || [])
@@ -95,6 +135,7 @@ function App() {
           `http://localhost:5001/api/goals/${editingGoalId}`,
           {
             method: "PUT",
+            credentials: "include",
             headers: {
               "Content-Type": "application/json",
             },
@@ -127,6 +168,7 @@ function App() {
       } else {
         const response = await fetch("http://localhost:5001/api/goals", {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
@@ -175,6 +217,7 @@ function App() {
         `http://localhost:5001/api/goals/${goalId}`,
         {
           method: "DELETE",
+          credentials: "include",
         },
       );
 
@@ -196,6 +239,7 @@ function App() {
         `http://localhost:5001/api/goals/${goalId}/milestones`,
         {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
@@ -237,6 +281,7 @@ function App() {
         `http://localhost:5001/api/milestones/${milestoneId}/actions`,
         {
           method: "POST",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
@@ -291,6 +336,7 @@ function App() {
         `http://localhost:5001/api/actions/${actionId}`,
         {
           method: "PATCH",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
@@ -346,6 +392,7 @@ function App() {
         `http://localhost:5001/api/actions/${actionId}`,
         {
           method: "PATCH",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
@@ -373,6 +420,7 @@ function App() {
         `http://localhost:5001/api/milestones/${milestoneId}`,
         {
           method: "PATCH",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
@@ -417,6 +465,7 @@ function App() {
         `http://localhost:5001/api/milestones/${milestoneId}`,
         {
           method: "DELETE",
+          credentials: "include",
         },
       );
 
@@ -447,6 +496,7 @@ function App() {
         `http://localhost:5001/api/actions/${actionId}`,
         {
           method: "DELETE",
+          credentials: "include",
         },
       );
 
@@ -472,6 +522,7 @@ function App() {
         `http://localhost:5001/api/milestones/${milestoneId}`,
         {
           method: "PATCH",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
@@ -522,6 +573,7 @@ function App() {
         `http://localhost:5001/api/milestones/${milestoneId}`,
         {
           method: "PATCH",
+          credentials: "include",
           headers: {
             "Content-Type": "application/json",
           },
@@ -559,18 +611,25 @@ function App() {
     }
   }
 
+  if (isCheckingAuth) {
+    return null;
+  }
+
+  if (!user) {
+    return <AuthForm onAuthenticated={setUser} />;
+  }
+
+  if (isLoading) {
+    return null;
+  }
+
   return (
     <main className="app">
       <header className="header">
         <h1>Momentum</h1>
         <p>Turn your goals into action.</p>
       </header>
-
-      {isLoading ? (
-        <section className="loading">
-          <p>Loading your goals...</p>
-        </section>
-      ) : showGoalForm ? (
+      {showGoalForm ? (
         <section className="goal-form">
           <h2>{editingGoalId !== null ? "Edit goal" : "Create a goal"}</h2>
 
