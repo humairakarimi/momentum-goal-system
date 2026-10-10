@@ -3,8 +3,9 @@ import "./App.css";
 import GoalCard from "./components/GoalCard";
 import TodayDashboard from "./components/TodayDashboard";
 import AuthForm from "./components/AuthForm";
-const API_URL = import.meta.env.VITE_API_URL;
 import DashboardSummary from "./components/DashboardSummary";
+
+const API_URL = import.meta.env.VITE_API_URL || "";
 
 function App() {
   const [user, setUser] = useState(null);
