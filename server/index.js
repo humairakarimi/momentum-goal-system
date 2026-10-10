@@ -630,10 +630,12 @@ app.post("/api/auth/register", async (request, response) => {
       },
     );
 
+    const isProduction = process.env.NODE_ENV === "production";
+
     response.cookie("token", token, {
       httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      secure: process.env.NODE_ENV === "production",
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -760,12 +762,13 @@ app.get("/api/auth/me", requireAuthentication, async (request, response) => {
   }
 });
 
-app.post("/api/auth/logout", (request, response) => {
-  response.clearCookie("token", {
-    httpOnly: true,
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    secure: process.env.NODE_ENV === "production",
-  });
+const isProduction = process.env.NODE_ENV === "production";
+
+response.clearCookie("token", {
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+});
 
   response.json({
     message: "Logged out successfully",
