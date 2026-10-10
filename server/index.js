@@ -762,13 +762,14 @@ app.get("/api/auth/me", requireAuthentication, async (request, response) => {
   }
 });
 
-const isProduction = process.env.NODE_ENV === "production";
+app.post("/api/auth/logout", (request, response) => {
+  const isProduction = process.env.NODE_ENV === "production";
 
-response.clearCookie("token", {
-  httpOnly: true,
-  secure: isProduction,
-  sameSite: isProduction ? "none" : "lax",
-});
+  response.clearCookie("token", {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+  });
 
   response.json({
     message: "Logged out successfully",
