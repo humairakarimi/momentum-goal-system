@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+const path = require("path");
 
 const { Pool } = require("pg");
 const express = require("express");
@@ -49,11 +50,7 @@ function requireAuthentication(request, response, next) {
   }
 }
 
-app.get("/", (request, response) => {
-  response.json({
-    message: "Momentum API is running",
-  });
-});
+
 
 app.get("/api/database-test", async (request, response) => {
   try {
@@ -774,6 +771,14 @@ app.post("/api/auth/logout", (request, response) => {
   response.json({
     message: "Logged out successfully",
   });
+});
+
+const clientBuildPath = path.join(__dirname, "../client/dist");
+
+app.use(express.static(clientBuildPath));
+
+app.get(/.*/, (request, response) => {
+  response.sendFile(path.join(clientBuildPath, "index.html"));
 });
 
 app.listen(PORT, () => {
