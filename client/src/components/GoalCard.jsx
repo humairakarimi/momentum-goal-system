@@ -86,40 +86,41 @@ function GoalCard({
             onToggleToday={onToggleToday}
           />
         ))}
+      
+      {showMilestoneForm && (
+        <form onSubmit={handleMilestoneSubmit}>
+          <input
+            type="text"
+            placeholder="Enter a milestone"
+            value={milestoneTitle}
+            onChange={(event) => setMilestoneTitle(event.target.value)}
+            required
+            autoFocus
+          />
 
-        {showMilestoneForm ? (
-          <form onSubmit={handleMilestoneSubmit}>
-            <input
-              type="text"
-              placeholder="Enter a milestone"
-              value={milestoneTitle}
-              onChange={(event) => setMilestoneTitle(event.target.value)}
-              required
-            />
+          <div className="milestone-actions">
+            <button type="submit">Save milestone</button>
 
-            <div className="milestone-actions">
-              <button type="submit">Save milestone</button>
-
-              <button
-                type="button"
-                className="cancel-button"
-                onClick={handleCancelMilestone}
-              >
-                Cancel
-              </button>
-            </div>
-          </form>
-        ) : (
-          <button
-            type="button"
-            className="milestone-button"
-            onClick={() => setShowMilestoneForm(true)}
-          >
-            Add milestone
-          </button>
-        )}
+            <button
+              type="button"
+              className="cancel-button"
+              onClick={handleCancelMilestone}
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+      {!showMilestoneForm && (
+        <button
+          type="button"
+          className="milestone-button"
+          onClick={() => setShowMilestoneForm(true)}
+        >
+          Add milestone
+        </button>
+      )}
       </div>
-
       <button
         type="button"
         className="edit-button"

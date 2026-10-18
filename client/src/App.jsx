@@ -5,9 +5,21 @@ import TodayDashboard from "./components/TodayDashboard";
 import AuthForm from "./components/AuthForm";
 import DashboardSummary from "./components/DashboardSummary";
 
+import {
+  HashRouter,
+  Link,
+  useLocation,
+  useNavigate,
+  useMatch,
+} from "react-router-dom";
+import GoalPreviewCard from "./components/GoalPreviewCard";
+
 const API_URL = import.meta.env.VITE_API_URL || "";
 
-function App() {
+function MomentumApp() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const goalRoute = useMatch("/goals/:goalId");
   const [user, setUser] = useState(null);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [showGoalForm, setShowGoalForm] = useState(false);
@@ -18,6 +30,19 @@ function App() {
   const [editingGoalId, setEditingGoalId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [appError, setAppError] = useState("");
+
+  const selectedGoal = goalRoute
+    ? goals.find((goal) => String(goal.id) === goalRoute.params.goalId)
+    : null;
+
+  // Close any open goal form when navigating between pages.
+  useEffect(() => {
+    setShowGoalForm(false);
+    setEditingGoalId(null);
+    setGoalTitle("");
+    setGoalDescription("");
+    setTargetDate("");
+  }, [location.pathname]);
 
   useEffect(() => {
     async function checkAuthentication() {
@@ -244,6 +269,9 @@ function App() {
       setGoals((currentGoals) =>
         currentGoals.filter((goal) => goal.id !== goalId),
       );
+      if (goalRoute?.params.goalId === String(goalId)) {
+        navigate("/");
+      }
     } catch (error) {
       handleAppError(error);
     }
@@ -645,6 +673,7 @@ function App() {
       setShowGoalForm(false);
       setEditingGoalId(null);
       setAppError("");
+      navigate("/");
     } catch (error) {
       handleAppError(error);
     }
@@ -752,7 +781,34 @@ function App() {
             </div>
           </form>
         </section>
-      ) : goals.length > 0 ? (
+            ) : goalRoute ? (
+        <section className="goal-detail-page">
+          <Link className="back-link" to="/">
+            ← Back to dashboard
+          </Link>
+
+          {selectedGoal ? (
+            <GoalCard
+              key={selectedGoal.id}
+              goal={selectedGoal}
+              onAddMilestone={handleAddMilestone}
+              onToggleMilestone={handleToggleMilestone}
+              onDeleteMilestone={handleDeleteMilestone}
+              onAddAction={handleAddAction}
+              onToggleAction={handleToggleAction}
+              onDeleteAction={handleDeleteAction}
+              onToggleToday={handleToggleToday}
+              onEdit={handleEditGoal}
+              onDelete={handleDeleteGoal}
+            />
+          ) : (
+            <div className="goal-card">
+              <h2>Goal not found</h2>
+              <p>This goal may have been deleted.</p>
+            </div>
+          )}
+        </section>
+      ) : (
         <>
           <DashboardSummary
             userName={user.name}
@@ -763,55 +819,55 @@ function App() {
           />
 
           <div className="dashboard-layout">
-            <section className="goals-section">
-              <div className="goals-heading">
-                <h2>Your goals</h2>
-
-                <button type="button" onClick={() => setShowGoalForm(true)}>
-                  Add another goal
-                </button>
-              </div>
-
-              <div className="goals-list">
-                {goals.map((goal) => (
-                  <GoalCard
-                    key={goal.id}
-                    goal={goal}
-                    onAddMilestone={handleAddMilestone}
-                    onToggleMilestone={handleToggleMilestone}
-                    onDeleteMilestone={handleDeleteMilestone}
-                    onDeleteAction={handleDeleteAction}
-                    onEdit={handleEditGoal}
-                    onDelete={handleDeleteGoal}
-                    onToggleToday={handleToggleToday}
-                    onAddAction={handleAddAction}
-                    onToggleAction={handleToggleAction}
-                  />
-                ))}
-              </div>
-            </section>
             <TodayDashboard
               todayActions={todayActions}
               onToggleAction={handleToggleAction}
               onToggleToday={handleToggleToday}
             />
+
+            <section className="goals-section">
+              <div className="goals-heading">
+                <h2>Your goals</h2>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleCancelForm();
+                    setShowGoalForm(true);
+                  }}
+                >
+                  Add goal
+                </button>
+              </div>
+
+              {goals.length > 0 ? (
+                <div className="goals-list">
+                  {goals.map((goal) => (
+                    <GoalPreviewCard key={goal.id} goal={goal} />
+                  ))}
+                </div>
+              ) : (
+                <div className="goals-empty">
+                  <h3>Start building momentum</h3>
+                  <p>
+                    Add your first goal, then break it into
+                    milestones and small actions.
+                  </p>
+                </div>
+              )}
+            </section>
           </div>
         </>
-      ) : (
-        <section className="welcome">
-          <h2>Start building momentum</h2>
-
-          <p>
-            Break your long-term goals into milestones and small actions you can
-            complete every day.
-          </p>
-
-          <button type="button" onClick={() => setShowGoalForm(true)}>
-            Create your first goal
-          </button>
-        </section>
       )}
     </main>
+  );
+}
+
+function App() {
+  return (
+    <HashRouter>
+      <MomentumApp />
+    </HashRouter>
   );
 }
 

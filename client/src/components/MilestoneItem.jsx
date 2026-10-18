@@ -3,7 +3,6 @@ import { useState } from "react";
 function MilestoneItem({
   goalId,
   milestone,
-  onToggleMilestone,
   onAddAction,
   onDeleteMilestone,
   onToggleAction,
@@ -14,17 +13,21 @@ function MilestoneItem({
   const [actionTitle, setActionTitle] = useState("");
 
   const actions = milestone.actions || [];
-  const completedActions = actions.filter((action) => action.completed).length;
+  const completedActions = actions.filter(
+    (action) => action.completed,
+  ).length;
 
-  const actionProgress =
-    actions.length > 0
-      ? Math.round((completedActions / actions.length) * 100)
-      : 0;
+  const actionProgress = actions.length
+    ? Math.round((completedActions / actions.length) * 100)
+    : 0;
 
-  function handleActionSubmit(event) {
+  async function handleActionSubmit(event) {
     event.preventDefault();
 
-    onAddAction(goalId, milestone.id, actionTitle);
+    const title = actionTitle.trim();
+    if (!title) return;
+
+    await onAddAction(goalId, milestone.id, title);
 
     setActionTitle("");
     setShowActionForm(false);
@@ -36,36 +39,36 @@ function MilestoneItem({
   }
 
   return (
-    <li
-      className={
-        milestone.completed
-          ? "milestone-item milestone-completed"
-          : "milestone-item"
-      }
-    >
+    <li className="milestone-item milestone-style-one">
       <div className="milestone-heading">
-        <label className="milestone-label">
-          <input
-            type="checkbox"
-            checked={milestone.completed}
-            onChange={() => onToggleMilestone(goalId, milestone.id)}
-          />
+        <div className="milestone-title-group">
+          <p className="milestone-eyebrow">Milestone</p>
+          <h5 className="milestone-title">{milestone.title}</h5>
+        </div>
 
-          <span>{milestone.title}</span>
-        </label>
+        <div className="milestone-header-controls">
+          <span
+            className={`milestone-status ${
+              milestone.completed ? "is-complete" : ""
+            }`}
+          >
+            {milestone.completed ? "Completed" : "In progress"}
+          </span>
 
-        <button
-          type="button"
-          className="delete-milestone-button"
-          onClick={() => onDeleteMilestone(goalId, milestone.id)}
-        >
-          <span aria-hidden="true">🗑</span>
-<span className="sr-only">Delete action</span>
-        </button>
+          <button
+            type="button"
+            className="delete-milestone-button"
+            onClick={() => onDeleteMilestone(goalId, milestone.id)}
+            aria-label={`Delete milestone: ${milestone.title}`}
+          >
+            <span aria-hidden="true">🗑</span>
+          </button>
+        </div>
       </div>
 
       <div className="actions">
-        <h5>Actions</h5>
+        <h6 className="actions-heading">Actions</h6>
+
         {actions.length > 0 && (
           <div className="action-progress">
             <p>
@@ -77,14 +80,14 @@ function MilestoneItem({
               className="action-progress-track"
               role="progressbar"
               aria-valuenow={actionProgress}
-              aria-valuemin="0"
-              aria-valuemax="100"
+              aria-valuemin={0}
+              aria-valuemax={100}
               aria-label="Action progress"
             >
               <div
                 className="action-progress-fill"
                 style={{ width: `${actionProgress}%` }}
-              ></div>
+              />
             </div>
           </div>
         )}
@@ -104,21 +107,32 @@ function MilestoneItem({
                       onToggleAction(goalId, milestone.id, action.id)
                     }
                   />
-
                   <span>{action.title}</span>
                 </label>
 
                 <div className="action-buttons">
                   <button
                     type="button"
-                    className={
-                      action.isToday ? "today-button selected" : "today-button"
+                    className={`today-button ${
+                      action.isToday ? "selected" : ""
+                    }`}
+                    aria-pressed={Boolean(action.isToday)}
+                    aria-label={`${
+                      action.isToday ? "Remove from" : "Add to"
+                    } Today: ${action.title}`}
+                    title={
+                      action.isToday
+                        ? "Remove from Today"
+                        : "Add to Today"
                     }
                     onClick={() =>
                       onToggleToday(goalId, milestone.id, action.id)
                     }
                   >
-                    {action.isToday ? "Remove from Today" : "Add to Today"}
+                    <span aria-hidden="true">
+                      {action.isToday ? "✓" : "+"}
+                    </span>
+                    Today
                   </button>
 
                   <button
@@ -127,9 +141,9 @@ function MilestoneItem({
                     onClick={() =>
                       onDeleteAction(goalId, milestone.id, action.id)
                     }
+                    aria-label={`Delete action: ${action.title}`}
                   >
                     <span aria-hidden="true">🗑</span>
-<span className="sr-only">Delete action</span>
                   </button>
                 </div>
               </li>
@@ -143,10 +157,12 @@ function MilestoneItem({
           <form onSubmit={handleActionSubmit}>
             <input
               type="text"
+              aria-label="New action title"
               placeholder="Enter a daily action"
               value={actionTitle}
               onChange={(event) => setActionTitle(event.target.value)}
               required
+              autoFocus
             />
 
             <div className="action-form-buttons">
